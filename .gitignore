@@ -75,6 +75,8 @@ _trash_web*/
 # ===== deploy screenshots (keep scripts only) =====
 deploy/*.png
 deploy/*.log
+deploy/qa-shots/
+deploy/backup/
 
 # ===== OS / editor =====
 .DS_Store
