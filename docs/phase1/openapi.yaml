@@ -1,0 +1,609 @@
+openapi: 3.0.3
+info:
+  title: 开平市中心医院能源管理平台 API
+  version: 1.0.0
+  description: >
+    MVP 阶段 API 契约（Phase 1）。所有端点以 /api/v1 前缀版本化。
+    前端据此生成 TS 类型与 Mock；后端据此实现。统一响应包络 { code, data, message }。
+    实时增量通过 WS /api/v1/ws/live 推送。
+servers:
+  - url: https://{host}/api/v1
+    variables:
+      host:
+        default: localhost
+tags:
+  - name: system
+    description: 鉴权 / 菜单 / 场景 / 灰度
+  - name: assets
+    description: 楼栋 / 设备 / 指标
+  - name: regulation
+    description: 智慧能源一体化调控平台
+  - name: lifecycle
+    description: 设备生命周期管理系统
+  - name: hvac
+    description: 空调集中控制调度系统
+  - name: lighting
+    description: 智慧照明管理系统
+  - name: power
+    description: 医院电力监控系统
+  - name: hotwater
+    description: 热水集中控制调度系统
+  - name: elevator
+    description: 电梯节能管理系统
+  - name: energy
+    description: 能耗统计与趋势
+  - name: alarm
+    description: 智能预警
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorEnvelope:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: integer, description: 非0为错误码 }
+        data: { nullable: true }
+        message: { type: string }
+    Building:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        floors: { type: integer }
+        gross_area: { type: number }
+        local_origin: { type: object, description: 模型局部坐标参考 }
+        status: { type: string, enum: [active, inactive] }
+    Subsystem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, enum: [regulation, lifecycle, hvac, lighting, power, hotwater, elevator] }
+        name: { type: string }
+        icon: { type: string, description: lucide 图标名 }
+        sort_order: { type: integer }
+    Device:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        building_id: { type: string, format: uuid }
+        subsystem_id: { type: string, format: uuid }
+        category_id: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        model: { type: string }
+        manufacturer: { type: string }
+        install_date: { type: string, format: date }
+        location: { type: object, description: "{x,y,z,floor,room}" }
+        status: { type: string, enum: [running, stopped, fault, offline, maintenance] }
+    Metric:
+      type: object
+      properties:
+        device_id: { type: string, format: uuid }
+        metric_key: { type: string }
+        value: { type: number }
+        unit: { type: string }
+        time: { type: string, format: date-time }
+        quality: { type: string, enum: [good, bad, uncertain] }
+        source: { type: string, enum: [mock, real] }
+    DevicePoint:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        device_id: { type: string, format: uuid }
+        building_id: { type: string, format: uuid }
+        position: { type: object, description: "{x,y,z} 模型局部坐标" }
+        marker_type: { type: string }
+        label: { type: string }
+        level_of_detail: { type: string, enum: [building, subsystem, equipment] }
+        visible: { type: boolean }
+    SceneConfig:
+      type: object
+      properties:
+        model_url: { type: string, description: 默认 /resources/models/hospital.glb，可后台替换 }
+        building_anchors: { type: array, items: { type: object } }
+        camera_presets: { type: array, items: { type: object } }
+        environment: { type: object }
+    Alarm:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        device_id: { type: string, format: uuid }
+        building_id: { type: string, format: uuid }
+        subsystem_id: { type: string, format: uuid }
+        level: { type: string, enum: [info, warning, critical] }
+        title: { type: string }
+        message: { type: string }
+        status: { type: string, enum: [active, acknowledged, cleared, suppressed] }
+        first_at: { type: string, format: date-time }
+        last_at: { type: string, format: date-time }
+    EnergySummary:
+      type: object
+      properties:
+        building_id: { type: string, format: uuid }
+        subsystem: { type: string }
+        period: { type: string, enum: [hour, day, month, year] }
+        kwh: { type: number }
+        cost: { type: number }
+        carbon_kg: { type: number }
+        peak_kw: { type: number }
+    MenuNode:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        parent_id: { type: string, format: uuid, nullable: true }
+        name: { type: string }
+        path: { type: string }
+        icon: { type: string }
+        subsystem_code: { type: string }
+    ControlCommand:
+      type: object
+      description: 控制指令（空调/照明等），具体字段随子系统
+      properties:
+        action: { type: string, enum: [power_on, power_off, set_temperature, set_mode, set_strategy, dimming] }
+        payload: { type: object }
+    ControlAck:
+      type: object
+      properties:
+        device_id: { type: string, format: uuid }
+        accepted: { type: boolean }
+        message: { type: string }
+  responses:
+    Unauthorized:
+      description: 未认证或 token 失效
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Forbidden:
+      description: 权限不足（RBAC 拦截）
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      tags: [system]
+      summary: 登录
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer, example: 0 }
+                  data:
+                    type: object
+                    properties:
+                      token: { type: string }
+                      user: { $ref: '#/components/schemas/Building' }
+  /auth/me:
+    get:
+      tags: [system]
+      summary: 当前用户
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      username: { type: string }
+                      role: { type: string }
+                      permissions: { type: array, items: { type: string } }
+  /auth/menus:
+    get:
+      tags: [system]
+      summary: 顶部动态菜单（楼栋 + 子系统）
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    properties:
+                      buildings: { type: array, items: { $ref: '#/components/schemas/Building' } }
+                      subsystems: { type: array, items: { $ref: '#/components/schemas/Subsystem' } }
+  /features:
+    get:
+      tags: [system]
+      summary: 当前用户灰度开关
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    additionalProperties: { type: boolean }
+  /scene/config:
+    get:
+      tags: [system]
+      summary: 3D 场景配置（模型 URL 可后台替换）
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data: { $ref: '#/components/schemas/SceneConfig' }
+  /scene/points:
+    get:
+      tags: [system]
+      summary: 设备 3D 点位
+      parameters:
+        - { name: building_id, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: subsystem, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    properties:
+                      points: { type: array, items: { $ref: '#/components/schemas/DevicePoint' } }
+  /buildings:
+    get:
+      tags: [assets]
+      summary: 楼栋列表
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    properties:
+                      items: { type: array, items: { $ref: '#/components/schemas/Building' } }
+  /buildings/{id}:
+    get:
+      tags: [assets]
+      summary: 楼栋详情
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /buildings/{id}/subsystems:
+    get:
+      tags: [assets]
+      summary: 该楼启用子系统清单（按 building_subsystem_config）
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            subsystem_code: { type: string, enum: [regulation, lifecycle, hvac, lighting, power, hotwater, elevator] }
+                            name: { type: string }
+                            enabled: { type: boolean }
+                            config: { type: object, nullable: true }
+                            sort_order: { type: integer }
+    put:
+      tags: [assets]
+      summary: 后台配置楼栋启用子系统（可配置 2/5/7 个等）
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [subsystem_code, enabled]
+                    properties:
+                      subsystem_code: { type: string, enum: [regulation, lifecycle, hvac, lighting, power, hotwater, elevator] }
+                      enabled: { type: boolean }
+                      config_json: { type: object }
+      responses:
+        '200':
+          description: 已更新
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    description: 更新后的 building_subsystem_config 列表
+  /devices:
+    get:
+      tags: [assets]
+      summary: 设备列表（按楼栋/子系统/类别/状态筛选）
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+        - { name: subsystem, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20 } }
+      responses:
+        '200': { description: OK }
+  /devices/{id}:
+    get:
+      tags: [assets]
+      summary: 设备详情
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /devices/{id}/metrics/latest:
+    get:
+      tags: [assets]
+      summary: 设备最新指标
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    properties:
+                      metrics: { type: array, items: { $ref: '#/components/schemas/Metric' } }
+  /devices/{id}/metrics:
+    get:
+      tags: [assets]
+      summary: 设备指标区间查询
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { name: keys, in: query, schema: { type: array, items: { type: string } } }
+      responses:
+        '200': { description: OK }
+  /devices/{id}/control:
+    post:
+      tags: [assets]
+      summary: 下发控制指令
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ControlCommand' }
+      responses:
+        '200':
+          description: 已接受
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data: { $ref: '#/components/schemas/ControlAck' }
+  /regulation/overview:
+    get:
+      tags: [regulation]
+      summary: 智慧能源一体化调控（总能耗/成本/碳排/负荷曲线）
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /lifecycle/equipment:
+    get:
+      tags: [lifecycle]
+      summary: 设备生命周期（资产/健康分/维保到期）
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /lifecycle/maintenance:
+    get:
+      tags: [lifecycle]
+      summary: 维保计划与记录
+      responses:
+        '200': { description: OK }
+  /hvac/status:
+    get:
+      tags: [hvac]
+      summary: 空调状态（楼内每层汇总 + 单台参数）
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /hvac/control:
+    post:
+      tags: [hvac]
+      summary: 空调控制（策略/开关/设定温度）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ControlCommand' }
+      responses:
+        '200': { description: OK }
+  /lighting/status:
+    get:
+      tags: [lighting]
+      summary: 照明状态与区域能耗
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /lighting/control:
+    post:
+      tags: [lighting]
+      summary: 照明控制（联动/定时/远程）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ControlCommand' }
+      responses:
+        '200': { description: OK }
+  /power/status:
+    get:
+      tags: [power]
+      summary: 电力监控（电压/电流/功率/功率因数/谐波）
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /hotwater/status:
+    get:
+      tags: [hotwater]
+      summary: 热水（水温/流量/压缩机功率/COP/水箱温度）
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /elevator/status:
+    get:
+      tags: [elevator]
+      summary: 电梯（运行次数/能耗/储能回馈/待机）
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /energy/summary:
+    get:
+      tags: [energy]
+      summary: 能耗汇总
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+        - { name: period, in: query, schema: { type: string, enum: [hour, day, month, year] } }
+      responses:
+        '200': { description: OK }
+  /energy/trend:
+    get:
+      tags: [energy]
+      summary: 能耗趋势
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+        - { name: subsystem, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+      responses:
+        '200': { description: OK }
+  /alarms:
+    get:
+      tags: [alarm]
+      summary: 告警列表
+      parameters:
+        - { name: building_id, in: query, schema: { type: string, format: uuid } }
+        - { name: subsystem, in: query, schema: { type: string } }
+        - { name: level, in: query, schema: { type: string, enum: [info, warning, critical] } }
+        - { name: status, in: query, schema: { type: string, enum: [active, acknowledged, cleared, suppressed] } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: integer }
+                  data:
+                    type: object
+                    properties:
+                      items: { type: array, items: { $ref: '#/components/schemas/Alarm' } }
+  /alarms/{id}/ack:
+    post:
+      tags: [alarm]
+      summary: 确认告警
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /alarms/{id}/clear:
+    post:
+      tags: [alarm]
+      summary: 清除告警
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+  /alarms/rules:
+    get:
+      tags: [alarm]
+      summary: 告警阈值规则（后台）
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [alarm]
+      summary: 新建/更新告警阈值规则（后台）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subsystem: { type: string }
+                metric_key: { type: string }
+                operator: { type: string, enum: [">", ">=", "<", "<=", "=="] }
+                threshold: { type: number }
+                level: { type: string, enum: [info, warning, critical] }
+      responses:
+        '201': { description: 已创建 }

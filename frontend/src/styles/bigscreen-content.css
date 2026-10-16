@@ -1,0 +1,726 @@
+/**
+ * 大屏内容组件库 —— 参考页 index.html L157-440 的令牌化 1:1 复刻
+ * 契约：docs/design/bigscreen-ref-style-v2.md §8
+ *
+ * 用途：图1 S1–S7 悬浮卡 + 图2-7 各屏面板的内部 DOM 样式。
+ * 内容组件（ScreenHvac.vue 等）只写 DOM 结构 + 数据，样式全部来自本文件，禁止在组件里重复定义。
+ *
+ * P0 规则：零硬编码色值。参考页字面值 → 令牌映射对照：
+ *   #35C5FF               → var(--kp-accent)
+ *   rgba(53,197,255,α)    → rgba(var(--kp-accent-rgb), α)
+ *   #1E4E7E               → var(--kp-panel-edge)
+ *   rgba(30,78,126,α)     → rgba(var(--kp-edge-rgb), α)
+ *   rgba(10,28,52,α)      → rgba(var(--kp-panel-fill-rgb), α)
+ *   rgba(4,16,30,α) / rgba(6,20,38,α) → rgba(var(--kp-bg-rgb), α)
+ *   #EAF6FF → --kp-fg      #E8F4FF → --kp-fg-body      #9FC3E0 → --kp-fg-muted
+ *   #62809C → --kp-fg-subtle   #FFFFFF → --kp-fg-strong   #8FA6BE → --kp-fg-dim
+ *   #34D98A → --kp-success  #FFB03A → --kp-warn  #FF5252 → --kp-danger
+ *   #2E8BFF → --kp-info     #7AA8FF → --kp-info-soft
+ *
+ * 作用域：全部限定在 .bs-stage 内，绝不污染后台页 / Element Plus。
+ */
+
+/* =====================================================================
+   1. 子系统摘要卡（图1 S1–S7 头部 + 指标行）
+   ===================================================================== */
+.bs-stage .sub-top { display: flex; align-items: center; gap: var(--kp-space-2); margin-bottom: var(--kp-space-2); }
+.bs-stage .sub-code {
+  font-size: var(--kp-text-sm);
+  font-weight: 700;
+  color: var(--kp-bg);
+  background: var(--kp-accent);
+  border-radius: 3px;
+  padding: 2px 7px;
+  letter-spacing: 0.5px;
+}
+.bs-stage .sub-name { font-size: 13px; color: var(--kp-fg); font-weight: 600; }
+.bs-stage .sub-rows { display: flex; flex-direction: column; gap: 6px; }
+.bs-stage .sub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(var(--kp-edge-rgb), 0.14);
+  border-left: 2px solid rgba(var(--kp-accent-rgb), 0.35);
+  padding: 5px 10px;
+  border-radius: 2px;
+}
+.bs-stage .sub-row .k { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); }
+.bs-stage .sub-row .v {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .sub-row .v .u { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); margin-left: 3px; font-weight: 400; }
+
+/* =====================================================================
+   2. KPI 行（通用）
+   ===================================================================== */
+.bs-stage .kpis { display: flex; gap: var(--kp-space-2); }
+.bs-stage .kpi {
+  flex: 1;
+  background: rgba(var(--kp-edge-rgb), 0.18);
+  border: 1px solid rgba(var(--kp-edge-rgb), 0.55);
+  border-radius: 3px;
+  padding: var(--kp-space-2) var(--kp-space-2) 6px;
+  text-align: center;
+}
+.bs-stage .kpi .k { font-size: var(--kp-text-xs); color: var(--kp-fg-muted); letter-spacing: 0.5px; white-space: nowrap; }
+.bs-stage .kpi .v {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .kpi .u { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); margin-left: 2px; font-weight: 400; }
+.bs-stage .kpi.red .v { color: var(--kp-danger); }
+.bs-stage .kpi.amber .v { color: var(--kp-warn); }
+.bs-stage .kpi.cyan .v { color: var(--kp-accent); }
+.bs-stage .kpi.green .v { color: var(--kp-success); }
+.bs-stage .kpi.blue .v { color: var(--kp-info); }
+
+/* =====================================================================
+   3. 图例
+   ===================================================================== */
+.bs-stage .legend {
+  display: flex;
+  gap: var(--kp-space-3);
+  align-items: center;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-fg-muted);
+  margin: 6px 0 2px;
+  flex-wrap: wrap;
+}
+.bs-stage .legend i { width: var(--kp-space-2); height: var(--kp-space-2); border-radius: 2px; display: inline-block; margin-right: 5px; }
+.bs-stage .legend .li { display: flex; align-items: center; }
+
+/* =====================================================================
+   4. 院区总览行 / 设备分类行
+   ===================================================================== */
+.bs-stage .ov-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  background: rgba(var(--kp-edge-rgb), 0.14);
+  border-left: 2px solid rgba(var(--kp-accent-rgb), 0.35);
+  padding: 0 10px;
+}
+.bs-stage .ov-row .ic {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(var(--kp-accent-rgb), 0.28);
+  border-radius: 3px;
+  flex: none;
+  color: var(--kp-accent);
+}
+.bs-stage .ov-row .nm { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); }
+.bs-stage .ov-row .vl { margin-left: auto; text-align: right; }
+.bs-stage .ov-row .vl .n {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .ov-row .vl .u { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); margin-left: 3px; }
+.bs-stage .ov-note { margin-top: 10px; font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); line-height: 1.5; }
+
+.bs-stage .dv-row { display: flex; align-items: center; gap: var(--kp-space-2); height: 27px; font-size: var(--kp-text-sm); }
+.bs-stage .dv-row .nm { width: 74px; color: var(--kp-fg-muted); flex: none; }
+.bs-stage .dv-row .tr { flex: 1; height: 6px; background: rgba(var(--kp-edge-rgb), 0.35); border-radius: 3px; overflow: hidden; }
+.bs-stage .dv-row .tr i { display: block; height: 100%; border-radius: 3px; }
+.bs-stage .dv-row .ct {
+  width: 56px;
+  text-align: right;
+  font-size: var(--kp-panel-title-size);
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+/* =====================================================================
+   5. 设备在线 donut 区
+   ===================================================================== */
+.bs-stage .on-wrap { display: flex; align-items: center; gap: 14px; height: 100%; }
+.bs-stage .donut { position: relative; width: 150px; height: 150px; flex: none; }
+.bs-stage .donut .ct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.bs-stage .donut .ct .n { font-size: 26px; font-weight: 700; color: var(--kp-fg-strong); font-variant-numeric: tabular-nums; }
+.bs-stage .donut .ct .l { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); margin-top: 2px; }
+.bs-stage .donut .ct .p { font-size: var(--kp-text-sm); color: var(--kp-success); margin-top: 3px; }
+.bs-stage .on-leg { flex: 1; }
+.bs-stage .on-leg .li {
+  display: flex;
+  align-items: center;
+  gap: var(--kp-space-2);
+  height: 44px;
+  border-bottom: 1px dashed rgba(var(--kp-edge-rgb), 0.5);
+}
+.bs-stage .on-leg .li:last-child { border-bottom: none; }
+.bs-stage .on-leg .li i { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+.bs-stage .on-leg .li .nm { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); }
+.bs-stage .on-leg .li .rt { margin-left: auto; text-align: right; }
+.bs-stage .on-leg .li .rt .n { font-size: var(--kp-text-xl); font-weight: 700; color: var(--kp-fg-strong); font-variant-numeric: tabular-nums; }
+.bs-stage .on-leg .li .rt .p { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); margin-left: 5px; }
+
+/* =====================================================================
+   6. 「今日运行情况」六宫格（图1 底条）
+   ===================================================================== */
+.bs-stage .lit-box {
+  border: 1px solid rgba(var(--kp-accent-rgb), 0.32);
+  border-radius: var(--kp-radius-panel);
+  padding: var(--kp-space-2);
+  height: 100%;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: var(--kp-space-2);
+  background: rgba(var(--kp-bg-rgb), 0.35);
+}
+.bs-stage .bt {
+  background: rgba(var(--kp-edge-rgb), 0.16);
+  border: 1px solid rgba(var(--kp-edge-rgb), 0.5);
+  border-radius: 3px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.bs-stage .bt .k { font-size: var(--kp-text-xs); color: var(--kp-fg-muted); }
+.bs-stage .bt .v { font-size: 19px; font-weight: 700; color: var(--kp-fg-strong); font-variant-numeric: tabular-nums; }
+.bs-stage .bt .v .u { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); margin-left: 3px; font-weight: 400; }
+
+/* =====================================================================
+   7. 子屏通用小组件（.mini / .row-line / 状态标签）
+   ===================================================================== */
+.bs-stage .mini { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); }
+.bs-stage .mini b { color: var(--kp-fg-strong); font-weight: 700; }
+.bs-stage .row-line {
+  display: flex;
+  align-items: center;
+  gap: var(--kp-space-2);
+  height: 30px;
+  font-size: var(--kp-text-sm);
+  border-bottom: 1px dashed rgba(var(--kp-edge-rgb), 0.4);
+}
+.bs-stage .row-line .nm { color: var(--kp-fg-muted); flex: none; }
+.bs-stage .row-line .vl {
+  margin-left: auto;
+  color: var(--kp-fg-body);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.bs-stage .row-line .vl.warn { color: var(--kp-warn); }
+.bs-stage .row-line .vl.bad { color: var(--kp-danger); }
+.bs-stage .row-line .vl.ok { color: var(--kp-success); }
+
+/* 运行状态药丸（.st.run/.warn/.stop） */
+.bs-stage .st.run {
+  background: rgba(var(--kp-success-rgb), 0.18);
+  color: var(--kp-success);
+  border: 1px solid rgba(var(--kp-success-rgb), 0.5);
+}
+.bs-stage .st.warn {
+  background: rgba(var(--kp-warn-rgb), 0.18);
+  color: var(--kp-warn);
+  border: 1px solid rgba(var(--kp-warn-rgb), 0.5);
+}
+.bs-stage .st.stop {
+  background: rgba(var(--kp-danger-rgb), 0.18);
+  color: var(--kp-danger);
+  border: 1px solid rgba(var(--kp-danger-rgb), 0.5);
+}
+
+/* =====================================================================
+   8. 链路图（图2 空调总览：冷机→冷却塔→水泵→末端）
+   ===================================================================== */
+.bs-stage .chain { display: flex; align-items: stretch; gap: 0; height: 100%; }
+.bs-stage .chain .node {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--kp-edge-rgb), 0.18);
+  border: 1px solid rgba(var(--kp-edge-rgb), 0.6);
+  border-radius: var(--kp-radius-panel);
+  position: relative;
+  padding: 6px;
+}
+.bs-stage .chain .node .cn { font-size: 13px; color: var(--kp-fg); font-weight: 600; }
+.bs-stage .chain .node .cv { font-size: var(--kp-text-xs); color: var(--kp-fg-muted); margin-top: 3px; }
+.bs-stage .chain .node .cl { font-size: var(--kp-text-xl); font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.bs-stage .chain .arrow { width: 26px; display: flex; align-items: center; justify-content: center; color: var(--kp-accent); }
+.bs-stage .chain .node .st {
+  position: absolute;
+  top: 6px;
+  right: var(--kp-space-2);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--kp-space-2);
+}
+
+/* =====================================================================
+   9. 温度热力格（图2 分区温度）
+   ===================================================================== */
+.bs-stage .heat { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; height: 100%; }
+.bs-stage .heat .cell {
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-bg);
+  font-weight: 700;
+  border: 1px solid var(--kp-border-hairline);
+}
+.bs-stage .heat .cell small { font-size: 9px; font-weight: 400; opacity: 0.85; }
+
+/* =====================================================================
+   10. 告警/记录列表
+   ===================================================================== */
+.bs-stage .lst { height: 100%; overflow: hidden; display: flex; flex-direction: column; gap: 5px; }
+.bs-stage .lst .it {
+  background: rgba(var(--kp-edge-rgb), 0.14);
+  border-left: 2px solid rgba(var(--kp-accent-rgb), 0.35);
+  padding: 6px var(--kp-space-2);
+  font-size: var(--kp-text-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--kp-space-2);
+}
+.bs-stage .lst .it .tg { font-size: 10px; padding: 1px 6px; border-radius: var(--kp-space-2); flex: none; }
+.bs-stage .tg.u { background: rgba(var(--kp-danger-rgb), 0.18); color: var(--kp-danger); }
+.bs-stage .tg.m { background: rgba(var(--kp-warn-rgb), 0.18); color: var(--kp-warn); }
+.bs-stage .tg.n { background: rgba(var(--kp-info-rgb), 0.18); color: var(--kp-info); }
+.bs-stage .tg.ok { background: rgba(var(--kp-success-rgb), 0.18); color: var(--kp-success); }
+.bs-stage .lst .it .tx { color: var(--kp-fg-body); flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bs-stage .lst .it .tm { color: var(--kp-fg-subtle); font-size: var(--kp-text-xs); font-variant-numeric: tabular-nums; }
+
+/* =====================================================================
+   11. 表格式列表
+   ===================================================================== */
+.bs-stage .tbl { width: 100%; border-collapse: collapse; font-size: var(--kp-text-sm); }
+.bs-stage .tbl th {
+  color: var(--kp-fg-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 5px var(--kp-space-2);
+  border-bottom: 1px solid rgba(var(--kp-accent-rgb), 0.3);
+}
+.bs-stage .tbl td {
+  color: var(--kp-fg-body);
+  padding: 5px var(--kp-space-2);
+  border-bottom: 1px dashed rgba(var(--kp-edge-rgb), 0.4);
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .tbl tr:hover td { background: rgba(var(--kp-accent-rgb), 0.08); }
+
+/* =====================================================================
+   12. 井道行程图（图3 电梯实时位置）
+   ===================================================================== */
+.bs-stage .shafts { display: flex; gap: 14px; height: 100%; align-items: stretch; justify-content: center; }
+.bs-stage .shaft {
+  flex: 1;
+  position: relative;
+  border: 1px solid rgba(var(--kp-edge-rgb), 0.6);
+  border-radius: var(--kp-radius-panel);
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(var(--kp-edge-rgb), 0.12) 0,
+    rgba(var(--kp-edge-rgb), 0.12) 1px,
+    transparent 1px,
+    transparent 26px
+  );
+}
+.bs-stage .shaft .car {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 22px;
+  background: rgba(var(--kp-accent-rgb), 0.35);
+  border: 1px solid var(--kp-accent);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-fg);
+  font-weight: 700;
+}
+.bs-stage .shaft .cap {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-fg-muted);
+  transform: translateY(-100%);
+}
+
+/* =====================================================================
+   13. 漏斗（图5 派单处置）
+   ===================================================================== */
+.bs-stage .funnel { display: flex; flex-direction: column; gap: var(--kp-space-2); height: 100%; justify-content: center; }
+.bs-stage .funnel .f { display: flex; align-items: center; gap: 10px; }
+.bs-stage .funnel .fb {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--kp-bg);
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 3px;
+}
+
+/* =====================================================================
+   14. 空间树（图6 10 栋 → 楼层 → 科室）
+   ===================================================================== */
+.bs-stage .tree { height: 100%; overflow: auto; font-size: var(--kp-text-sm); padding-right: 6px; }
+.bs-stage .tree .b { margin-bottom: 4px; }
+.bs-stage .tree .bh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 6px;
+  background: rgba(var(--kp-edge-rgb), 0.2);
+  border-radius: 3px;
+  color: var(--kp-fg);
+  font-weight: 600;
+}
+.bs-stage .tree .bh .ct { margin-left: auto; color: var(--kp-accent); font-weight: 700; }
+.bs-stage .tree .fl {
+  margin: 3px 0 3px var(--kp-space-4);
+  padding: 3px 6px;
+  background: rgba(var(--kp-edge-rgb), 0.1);
+  border-left: 2px solid rgba(var(--kp-accent-rgb), 0.3);
+  color: var(--kp-fg-muted);
+  border-radius: 2px;
+  /* 覆盖 stage 层 .fl（楼层按钮）的交互样式：树内 .fl 是静态节点 */
+  width: auto;
+  height: auto;
+  display: block;
+  cursor: default;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  box-shadow: none;
+}
+.bs-stage .tree .rm { margin: 2px 0 2px 30px; padding: 2px 6px; color: var(--kp-fg-body); font-size: var(--kp-text-xs); }
+
+/* =====================================================================
+   15. 健康度仪表 / 卡片
+   ===================================================================== */
+.bs-stage .gauge { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+.bs-stage .gauge .score {
+  font-size: 46px;
+  font-weight: 700;
+  color: var(--kp-success);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(var(--kp-success-rgb), 0.5);
+}
+.bs-stage .gauge .lab { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); margin-top: 4px; }
+
+.bs-stage .hcards { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--kp-space-2); height: 100%; }
+.bs-stage .hcard {
+  background: rgba(var(--kp-edge-rgb), 0.16);
+  border: 1px solid rgba(var(--kp-edge-rgb), 0.5);
+  border-radius: 3px;
+  padding: var(--kp-space-2) 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.bs-stage .hcard .hn { font-size: var(--kp-text-xs); color: var(--kp-fg-muted); white-space: nowrap; }
+.bs-stage .hcard .hv {
+  font-size: var(--kp-text-xl);
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .hcard .hs { font-size: 10px; margin-top: 2px; }
+
+/* =====================================================================
+   16. 图7 权威建筑面积表
+   ===================================================================== */
+.bs-stage .t7 { width: 100%; border-collapse: collapse; font-size: var(--kp-panel-title-size); }
+.bs-stage .t7 th {
+  background: rgba(var(--kp-edge-rgb), 0.4);
+  color: var(--kp-fg);
+  font-weight: 700;
+  padding: var(--kp-space-3) var(--kp-space-4);
+  text-align: left;
+  border-bottom: 2px solid var(--kp-accent);
+  letter-spacing: 1px;
+}
+.bs-stage .t7 td {
+  padding: 11px var(--kp-space-4);
+  border-bottom: 1px solid rgba(var(--kp-edge-rgb), 0.45);
+  color: var(--kp-fg-body);
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .t7 tr:hover td { background: rgba(var(--kp-accent-rgb), 0.07); }
+.bs-stage .t7 .bno { color: var(--kp-accent); font-weight: 700; }
+.bs-stage .t7 .pend { color: var(--kp-warn); font-weight: 700; }
+.bs-stage .t7 tfoot td {
+  background: rgba(var(--kp-panel-fill-rgb), 0.9);
+  color: var(--kp-fg-strong);
+  font-weight: 700;
+  font-size: var(--kp-text-lg);
+  border-top: 2px solid var(--kp-accent);
+}
+.bs-stage .t7 .right { text-align: right; }
+
+/* =====================================================================
+   17. 图1 S1–S7 图表卡（.ck* 环形/折线/KPI 组合）
+   ===================================================================== */
+.bs-stage .ck { height: 100%; display: flex; flex-direction: column; justify-content: center; }
+.bs-stage .ck-row { display: flex; align-items: center; gap: 14px; min-height: 0; }
+.bs-stage .ck-ring { position: relative; width: 122px; height: 122px; flex: none; }
+.bs-stage .ck-ring svg { position: absolute; left: 0; top: 0; }
+.bs-stage .dk-ctr {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 122px;
+  height: 122px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.bs-stage .dk-ctr b {
+  font-size: var(--kp-text-2xl);
+  color: var(--kp-fg-strong);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .dk-ctr span { font-size: 10px; color: var(--kp-fg-subtle); margin-top: 2px; letter-spacing: 1px; }
+.bs-stage .ck-lg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.bs-stage .ck-lg .lr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--kp-text-sm);
+  color: var(--kp-fg-muted);
+}
+.bs-stage .ck-lg .lr i {
+  display: inline-block;
+  width: var(--kp-space-2);
+  height: var(--kp-space-2);
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.bs-stage .ck-lg .lr b { color: var(--kp-fg); font-weight: 700; font-variant-numeric: tabular-nums; }
+.bs-stage .ck-kpis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px var(--kp-space-3);
+  margin-bottom: 6px;
+}
+.bs-stage .ck-kpi { display: flex; align-items: baseline; gap: 4px; font-size: var(--kp-text-xs); color: var(--kp-fg-muted); }
+.bs-stage .ck-kpi b { font-size: 17px; font-weight: 800; color: var(--kp-fg-strong); font-variant-numeric: tabular-nums; }
+.bs-stage .ck-kpi em { font-style: normal; color: var(--kp-fg-subtle); font-size: 10px; }
+.bs-stage .ck-svg { flex: 1; min-height: 0; display: flex; align-items: center; }
+.bs-stage .ck-svg svg { width: 100%; }
+.bs-stage .ck-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-fg-subtle);
+  margin-top: 4px;
+}
+.bs-stage .ck-foot .fb { color: var(--kp-accent); letter-spacing: 0.5px; }
+
+/* 计量体系树（S5 电力） */
+.bs-stage .ck-tree { display: flex; flex-direction: column; height: 100%; }
+.bs-stage .ct-l0 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(var(--kp-accent-rgb), 0.12);
+  border: 1px solid rgba(var(--kp-accent-rgb), 0.45);
+  border-radius: 3px;
+  padding: 4px var(--kp-space-2);
+  font-size: 12.5px;
+  color: var(--kp-fg);
+  font-weight: 600;
+}
+.bs-stage .ct-l0 b { margin-left: auto; color: var(--kp-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.bs-stage .ct-br { position: relative; padding: 3px 0 3px var(--kp-space-4) ; }
+.bs-stage .ct-br::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: rgba(var(--kp-accent-rgb), 0.25);
+}
+.bs-stage .ct-l1 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  font-size: var(--kp-text-sm);
+  color: var(--kp-fg-muted);
+}
+.bs-stage .ct-l1::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: var(--kp-space-3);
+  height: 1px;
+  background: rgba(var(--kp-accent-rgb), 0.25);
+}
+.bs-stage .ct-l1 i { width: 7px; height: 7px; border: 1.5px solid var(--kp-accent); transform: rotate(45deg); flex: none; }
+.bs-stage .ct-l1 b { margin-left: auto; color: var(--kp-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.bs-stage .ct-leaf { margin-left: var(--kp-space-4); display: flex; gap: 5px; flex-wrap: wrap; padding: 2px 6px; }
+.bs-stage .ct-leaf span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--kp-fg-dim);
+  border: 1px solid rgba(var(--kp-edge-rgb), 0.5);
+  border-radius: 2px;
+  padding: 1px 5px;
+}
+.bs-stage .ct-leaf span i { width: 4px; height: 4px; border-radius: 50%; background: var(--kp-success); display: inline-block; }
+.bs-stage .ct-alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-warn);
+  border-top: 1px dashed rgba(var(--kp-warn-rgb), 0.35);
+  padding-top: 5px;
+}
+
+/* 圆环组（S6 热水机组） */
+.bs-stage .ck-gauges { display: flex; justify-content: space-around; align-items: center; }
+.bs-stage .gm { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 86px; }
+.bs-stage .gm .gl { font-size: var(--kp-text-xs); color: var(--kp-fg-muted); display: flex; align-items: baseline; gap: 2px; }
+.bs-stage .gm .gl b { color: var(--kp-fg-strong); font-size: var(--kp-text-md); font-variant-numeric: tabular-nums; }
+.bs-stage .gm .gt { font-size: 10px; color: var(--kp-fg-subtle); }
+.bs-stage .ck-uni { display: flex; flex-wrap: wrap; gap: 5px; margin-top: var(--kp-space-2); }
+.bs-stage .ck-uni span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--kp-fg-muted);
+  background: rgba(var(--kp-edge-rgb), 0.18);
+  border-radius: 2px;
+  padding: 2px 6px;
+}
+.bs-stage .ck-uni i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+/* 科技蓝主卡（S7 电梯） */
+.bs-stage .cb {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kp-accent-rgb), 0.16),
+    rgba(var(--kp-info-rgb), 0.05) 55%,
+    rgba(var(--kp-panel-fill-rgb), 0.25)
+  );
+  border: 1px solid rgba(var(--kp-accent-rgb), 0.35);
+  border-radius: 3px;
+  padding: var(--kp-space-2) 10px;
+}
+.bs-stage .cb-t {
+  display: flex;
+  align-items: center;
+  gap: var(--kp-space-2);
+  font-size: 13px;
+  color: var(--kp-fg);
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+.bs-stage .cb-t::before {
+  content: '';
+  width: 6px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--kp-accent), var(--kp-info));
+  box-shadow: 0 0 var(--kp-space-2) rgba(var(--kp-accent-rgb), 0.8);
+}
+.bs-stage .cb-nums { display: flex; justify-content: space-between; align-items: flex-end; }
+.bs-stage .cb-nums .ni { text-align: center; }
+.bs-stage .cb-nums .ni b {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--kp-fg-strong);
+  text-shadow: 0 0 14px rgba(var(--kp-accent-rgb), 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .cb-nums .ni span {
+  display: block;
+  font-size: 10.5px;
+  color: var(--kp-fg-muted);
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+.bs-stage .cb-line {
+  height: 1px;
+  margin: 7px 0;
+  background: linear-gradient(90deg, rgba(var(--kp-accent-rgb), 0.6), rgba(var(--kp-accent-rgb), 0.05));
+}
+.bs-stage .cb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.bs-stage .cb-cell {
+  background: rgba(var(--kp-bg-rgb), 0.45);
+  border: 1px solid rgba(var(--kp-accent-rgb), 0.18);
+  border-radius: 2px;
+  padding: 3px 6px;
+  text-align: center;
+}
+.bs-stage .cb-cell b { display: block; font-size: var(--kp-panel-title-size); color: var(--kp-fg); font-variant-numeric: tabular-nums; }
+.bs-stage .cb-cell span { font-size: 9.5px; color: var(--kp-fg-subtle); }
+.bs-stage .cb-foot {
+  margin-top: var(--kp-space-2);
+  font-size: var(--kp-text-xs);
+  color: var(--kp-info-soft);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bs-stage .cb-foot i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--kp-accent);
+  box-shadow: 0 0 var(--kp-space-2) var(--kp-accent);
+  display: inline-block;
+}

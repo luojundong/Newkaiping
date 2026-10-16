@@ -1,0 +1,236 @@
+/**
+ * 开平市中心医院能源管理平台 — Design Tokens (CSS Variables)
+ * 层级: A1-identity / A1-structure / A2-defaults / B-slot-alias / C-extension
+ * 默认主题: 深蓝指挥舱 (dark-navy command-center) — 背景 #04101e 系 / 强调 #35c5ff 系
+ * 图标库: lucide-vue-next (ADR-002 锁定，全项目唯一图标源，禁止 emoji)
+ * 适配: 4K / 10bit / DCI-P3 广色域大屏
+ */
+
+:root {
+  /* =====================================================
+     A1-identity: 品牌核心色与字体 (背景 #04101e 系 / 强调 #35c5ff 系)
+     ===================================================== */
+  --kp-bg: #04101e;
+  --kp-bg-deep: #030c18;
+  --kp-surface: #0b1827;
+  --kp-surface-raised: #112339;
+  --kp-fg: #eaf6ff;
+  --kp-fg-muted: #9fc3e0;
+  --kp-fg-subtle: #62809c;
+  --kp-accent: #35c5ff;
+  --kp-accent-secondary: #1be5ad;
+  --kp-border: rgba(var(--kp-accent-rgb), 0.16);
+
+  --kp-font-display: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --kp-font-body: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* =====================================================
+     A2-defaults: 语义色与强调色派生
+     告警配色: 红/黄/绿三态区分，按 DCI-P3 广色域调校高饱和，确保 10bit 大屏告警可辨识
+     ===================================================== */
+  --kp-accent-on: #000d14;
+  --kp-accent-hover: #68caff;   /* 旧 #33eaff → 新强调色 #35C5FF 的提亮态（派生，防旧色残留） */
+  --kp-accent-active: #9bcfff;  /* 旧 #66efff → 新强调色的更亮态（派生） */
+  --kp-success: #34d98a;   /* 绿 — 正常/在线/节能达标 (广色域高饱和) */
+  --kp-warn: #ffb03a;      /* 黄 — 预警/待确认 (广色域高饱和，区别于普通文本) */
+  --kp-danger: #ff5252;    /* 红 — 严重告警/故障/离线 (广色域高饱和) */
+  --kp-danger-glow: rgba(var(--kp-danger-rgb), 0.45);
+  --kp-warn-glow: rgba(var(--kp-warn-rgb), 0.4);
+  --kp-success-glow: rgba(var(--kp-success-rgb), 0.4);
+  --kp-info: #2e8bff;      /* 蓝 — 提示/信息/链接 */
+  --kp-font-mono: "JetBrains Mono", "DIN Alternate", "DIN", "Roboto Mono", monospace;
+
+  /* =====================================================
+     B-slot-alias: 别名层
+     ===================================================== */
+  --kp-fg-2: var(--kp-fg-muted);
+  --kp-meta: var(--kp-fg-subtle);
+  --kp-surface-warm: var(--kp-surface-raised);
+  --kp-border-soft: rgba(255, 255, 255, 0.06);
+  --kp-border-strong: rgba(var(--kp-accent-rgb), 0.35);
+
+  /* =====================================================
+     C-extension: 品牌/项目专属扩展
+     ===================================================== */
+  --kp-glow: rgba(var(--kp-accent-rgb), 0.35);
+  --kp-glow-strong: rgba(var(--kp-accent-rgb), 0.6);
+  --kp-glow-soft: rgba(var(--kp-accent-rgb), 0.12);
+
+  /* =====================================================
+     C-extension: 参考大屏 Chrome（hud-dashboard-style-spec v1）
+     唯一硬编码颜色出处；组件必须引用这些变量，禁止再写字面色值。
+     ===================================================== */
+  --kp-panel-fill-rgb: 10, 28, 52;              /* 面板底色 RGB，与 --kp-panel-alpha 组合 */
+  --kp-panel-edge: #1e4e7e;                     /* 面板实体钢蓝描边（替代半透明青边） */
+  --kp-panel-edge-soft: rgba(30, 78, 126, 0.5); /* 次级分隔/标签边框 */
+  --kp-radius-panel: 4px;                       /* 面板圆角（参考页 4px 直角科技感） */
+  --kp-panel-title-h: 36px;                     /* 面板标题栏高度 */
+  --kp-grid-line: rgba(var(--kp-accent-rgb), 0.05);      /* 舞台网格线 */
+  --kp-grid-size: 60px;                         /* 舞台网格间距 */
+  /* 舞台实底渐变：仅用于「无 3D 的平面画布」——后台样式 DIY 迷你预览、布局 DIY 拖拽画布。
+     大屏运行态 .bs-scale-wrap 不可用它，否则会盖掉后台 DIY 的背景底色（--kp-bg-deep 行内注入）。 */
+  --kp-stage-bg: linear-gradient(180deg, #04101e 0%, #072038 52%, #0a2342 100%);
+  /* 以下两层均为「透明 → transparent」的叠加光晕，只提亮不遮挡，可安全叠在 3D 模型之上。
+     大屏外壳底色仍由 --kp-bg-deep 承担，DIY 背景色链路完整保留。 */
+  --kp-shell-halo: radial-gradient(120% 120% at 50% 15%, var(--kp-glow-soft) 0%, transparent 58%);
+  --kp-stage-halo: radial-gradient(ellipse at 50% 42%, var(--kp-glow-soft) 0%, transparent 62%);
+  --kp-topnav-bg: linear-gradient(180deg, rgba(8, 26, 48, 0.95), rgba(8, 26, 48, 0.55));
+
+  /* 子系统语义色 (7 大子系统) */
+  --kp-sys-energy: #35c5ff;
+  --kp-sys-lifecycle: #94a3b8;
+  --kp-sys-hvac: #1be5ad;
+  --kp-sys-lighting: #f59e0b;
+  --kp-sys-power: #3b82f6;
+  --kp-sys-water: #fb923c;
+  --kp-sys-elevator: #f43f5e;
+
+  /* ---- v2 复刻新增：参考大屏 Chrome 派生量（bigscreen-ref-style-v2.md §1.2） ----
+     以下 RGB 三元组供所有带 alpha 的合成使用；组件严禁再写 rgba(53,197,255,...) 字面值（P0 规则 #5）。 */
+  --kp-accent-rgb: 53, 197, 255;          /* #35C5FF */
+  --kp-edge-rgb: 30, 78, 126;             /* #1E4E7E — 参考页大量用 rgba(30,78,126,.12~.6) */
+  --kp-bg-rgb: 4, 16, 30;                 /* #04101E — 外壳底色 RGB，用于选中态/遮罩 alpha 合成 */
+  --kp-success-rgb: 52, 217, 138;
+  --kp-warn-rgb: 255, 176, 58;
+  --kp-danger-rgb: 255, 82, 82;
+  --kp-info-rgb: 46, 139, 255;
+
+  /* 文字层级补全 */
+  --kp-fg-strong: #ffffff;                /* 所有大数字 .num/.kpi .v/.ov-row .n */
+  --kp-fg-body: #e8f4ff;                  /* .t2 正文 — 比 --kp-fg-muted 亮，不可复用 */
+  --kp-fg-dim: #8fa6be;                   /* 计量树叶子标签 .ct-leaf —— 介于 muted 与 subtle 之间 */
+  --kp-info-soft: #7aa8ff;                /* 科技蓝主卡脚注 .cb-foot（比 --kp-info 更亮更柔） */
+  --kp-border-hairline: rgba(255, 255, 255, 0.12); /* 热力格描边：中性白细线，比 --kp-border-soft 强一档 */
+  --kp-teal: #5fe3c0;                     /* 第 6 序列色（风冷模块等分类）—— 参考页 #5FE3C0 */
+
+  /* 结构常量 */
+  --kp-topnav-h: 48px;                    /* .topnav 高度（旧 --kp-header-h:110px 是两行顶栏，图1 不再用） */
+  --kp-panel-title-size: 15px;            /* .p-title */
+  --kp-panel-title-tracking: 1.5px;
+  --kp-corner-size: 12px;                 /* .panel .c 四角尺寸 */
+  --kp-corner-width: 2px;
+
+  /* 外壳背景：参考页 body 的径向渐变，铺满缩放留白，视觉上无黑边 */
+  --kp-bg-shell: radial-gradient(120% 120% at 50% 15%, #0c2d55 0%, #072038 45%, #04101e 100%);
+
+  /* =====================================================
+     A1-structure: 字号层级 (8 级)
+     ===================================================== */
+  --kp-text-xs: 11px;
+  --kp-text-sm: 12px;
+  --kp-text-md: 14px;
+  --kp-text-lg: 16px;
+  --kp-text-xl: 18px;
+  --kp-text-2xl: 20px;
+  --kp-text-3xl: 24px;
+  --kp-text-4xl: 32px;
+  --kp-text-hero: 40px;
+
+  /* 行高与字距 */
+  --kp-leading-body: 1.6;
+  --kp-leading-tight: 1.25;
+  --kp-tracking-display: -0.01em;
+  --kp-tracking-label: 0.08em;
+
+  /* =====================================================
+     A1-structure: 间距系统 (4px 网格)
+     ===================================================== */
+  --kp-space-1: 4px;
+  --kp-space-2: 8px;
+  --kp-space-3: 12px;
+  --kp-space-4: 16px;
+  --kp-space-5: 20px;
+  --kp-space-6: 24px;
+  --kp-space-8: 32px;
+  --kp-space-10: 40px;
+  --kp-space-12: 48px;
+  --kp-space-16: 64px;
+  --kp-space-20: 80px;
+
+  /* =====================================================
+     A2: 圆角
+     ===================================================== */
+  --kp-radius-sm: 4px;
+  --kp-radius-md: 8px;
+  --kp-radius-lg: 12px;
+  --kp-radius-xl: 16px;
+  --kp-radius-pill: 9999px;
+
+  /* =====================================================
+     A2: 层级/阴影
+     ===================================================== */
+  --kp-elev-flat: none;
+  --kp-elev-ring: 0 0 0 1px var(--kp-border);
+  --kp-elev-raised: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --kp-elev-glow: 0 0 20px var(--kp-glow);
+
+  /* =====================================================
+     A2: Focus 与 Motion
+     ===================================================== */
+  --kp-focus-ring: 0 0 0 3px rgba(var(--kp-accent-rgb), 0.35);
+  --kp-motion-fast: 150ms;
+  --kp-motion-base: 200ms;
+  --kp-motion-slow: 300ms;
+  --kp-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* =====================================================
+     C-extension: 状态别名 (状态三态与语义色一致，便于组件按语义引用)
+     ===================================================== */
+  --kp-status-normal: var(--kp-success);
+  --kp-status-warning: var(--kp-warn);
+  --kp-status-critical: var(--kp-danger);
+  --kp-status-offline: #6b7f93;
+  --kp-status-unknown: #8ca8be;
+
+  /* =====================================================
+     A1-structure: 大屏布局常量
+     ===================================================== */
+  --kp-header-h: 110px; /* 顶部两行：标题 / 7 系统 tab */
+  --kp-left-w: 280px;   /* 左列（监控报警）宽度 —— 参考图左侧较窄 */
+  --kp-right-w: 520px;  /* 右列（10 数据框）宽度 —— 进一步调宽 */
+  --kp-bottom-h: 140px; /* 底部 6 等份通栏高度 */
+  --kp-gutter: 24px;
+  --kp-container-max: 100vw;
+  --kp-panel-alpha: 0.82; /* 面板背景透明度（参考页 0.82；后台 DIY 可改） */
+}
+
+/* 备用主题：翠绿 (green) — 仅交换强调色与语义色映射 */
+/* 注意：翠绿主题下强调色与“正常/在线”语义绿接近，仅作为非告警值守场景备用 */
+[data-kp-theme="green"] {
+  --kp-accent: #1be5ad;
+  --kp-accent-rgb: 27, 229, 173;
+  --kp-accent-secondary: #00e5ff;
+  --kp-accent-on: #000d14;
+  --kp-accent-hover: #33f5bd;
+  --kp-accent-active: #66f8ce;
+  --kp-border: rgba(27, 229, 173, 0.16);
+  --kp-border-strong: rgba(27, 229, 173, 0.35);
+  --kp-glow: rgba(27, 229, 173, 0.35);
+  --kp-glow-strong: rgba(27, 229, 173, 0.6);
+  --kp-glow-soft: rgba(27, 229, 173, 0.12);
+  --kp-focus-ring: 0 0 0 3px rgba(27, 229, 173, 0.35);
+  --kp-panel-edge: #1c5e56;
+  --kp-panel-edge-soft: rgba(28, 94, 86, 0.5);
+  --kp-grid-line: rgba(var(--kp-accent-rgb), 0.05);
+}
+
+/* 备用主题：琥珀 (amber) — 告警/高对比值守场景 */
+[data-kp-theme="amber"] {
+  --kp-accent: #ffb020;
+  --kp-accent-rgb: 255, 176, 32;
+  --kp-accent-secondary: #ffd166;
+  --kp-accent-on: #1a0f04;
+  --kp-accent-hover: #ffbe45;
+  --kp-accent-active: #ffcb6b;
+  --kp-border: rgba(255, 176, 32, 0.16);
+  --kp-border-strong: rgba(255, 176, 32, 0.35);
+  --kp-glow: rgba(255, 176, 32, 0.35);
+  --kp-glow-strong: rgba(255, 176, 32, 0.6);
+  --kp-glow-soft: rgba(255, 176, 32, 0.12);
+  --kp-focus-ring: 0 0 0 3px rgba(255, 176, 32, 0.35);
+  --kp-panel-edge: #6b5220;
+  --kp-panel-edge-soft: rgba(107, 82, 32, 0.5);
+  --kp-grid-line: rgba(var(--kp-accent-rgb), 0.05);
+}
+
+/* 明令不内置：紫→粉渐变主题（含参考工程“幻紫”一类配色），违反 P0 规则。 */

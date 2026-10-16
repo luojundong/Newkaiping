@@ -1,0 +1,160 @@
+/* 开平能源管理平台 — 弹层主题（GK-29）
+ * 目标：把设备/空调/照明等弹层统一为「屏幕居中 + 暗色指挥舱」模态，
+ * 与大屏 PanelCard 体系（半透明深色底 + 青色 accent + --kp-* 变量）对齐。
+ *
+ * 用法：弹层根元素加 class `kp-modal`（保留原有业务 class 如 .rc-dialog / .lc-dialog /
+ * .floor-drill / .device-detail-modal，便于 e2e 钩子）。本文件只覆盖 Element Plus
+ * 弹层框架与内部 EP 组件的明暗令牌，不改任何业务 class / DOM 结构。
+ *
+ * 注意：本项目 admin.css 把 `.kp-dialog` 复位为浅色（白底黑字，供后台表单用）。
+ * 大屏弹层刻意不使用 `kp-dialog`，改用本 `kp-modal`，以免被浅色复位污染。
+ */
+
+/* ---------- 0. 暗色令牌作用域（覆盖 EP 默认浅色令牌） ---------- */
+.kp-modal {
+  /* 输入与填充 */
+  --el-fill-color-blank: var(--kp-surface-raised);
+  --el-fill-color: var(--kp-surface-raised);
+  --el-fill-color-light: var(--kp-glow-soft);
+  --el-fill-color-lighter: var(--kp-glow-soft);
+
+  /* 背景 */
+  --el-bg-color: var(--kp-surface);
+  --el-bg-color-page: var(--kp-surface);
+  --el-bg-color-overlay: var(--kp-surface-raised);
+
+  /* 文本 */
+  --el-text-color-primary: var(--kp-fg);
+  --el-text-color-regular: var(--kp-fg);
+  --el-text-color-secondary: var(--kp-fg-muted);
+  --el-text-color-placeholder: var(--kp-fg-muted);
+  --el-text-color-disabled: var(--kp-fg-subtle);
+
+  /* 边框 */
+  --el-border-color: var(--kp-border);
+  --el-border-color-light: var(--kp-border);
+  --el-border-color-lighter: var(--kp-border);
+  --el-border-color-hover: var(--kp-accent);
+  --el-border-color-focus: var(--kp-accent);
+
+  /* 遮罩 */
+  --el-overlay-color-lighter: rgba(2, 10, 20, 0.62);
+
+  /* 默认按钮深色化（彩色 primary/success/danger 按钮仍沿用 EP 原色） */
+  --el-button-bg-color: var(--kp-surface-raised);
+  --el-button-border-color: var(--kp-border);
+  --el-button-text-color: var(--kp-fg);
+  --el-button-hover-bg-color: var(--kp-glow-soft);
+  --el-button-hover-border-color: var(--kp-accent);
+  --el-button-hover-text-color: var(--kp-fg);
+  --el-button-active-bg-color: var(--kp-glow-soft);
+  --el-button-active-border-color: var(--kp-accent);
+  --el-button-active-text-color: var(--kp-fg);
+  --el-button-disabled-bg-color: var(--kp-surface-raised);
+  --el-button-disabled-border-color: var(--kp-border);
+  --el-button-disabled-text-color: var(--kp-fg-subtle);
+}
+
+/* ---------- 1. 弹层框架（el-dialog 根） ---------- */
+.kp-modal.el-dialog {
+  background: rgba(11, 24, 39, 0.92);
+  border: 1px solid var(--kp-border-strong);
+  border-radius: var(--kp-radius-lg);
+  box-shadow: var(--kp-elev-raised), 0 0 40px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  color: var(--kp-fg);
+}
+
+/* 内部可滚动 body（高度超长时内部滚动，不顶满整屏） */
+.kp-modal .el-dialog__body {
+  color: var(--kp-fg);
+  padding: 16px 18px;
+  max-height: 84vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 有默认标题栏的弹层（RemoteControlDialog / LightingControlDialog）：标题与关闭按钮深色化 */
+.kp-modal .el-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--kp-border-strong);
+  background: linear-gradient(90deg, var(--kp-glow-soft), transparent);
+}
+.kp-modal .el-dialog__title {
+  color: var(--kp-fg);
+  font-size: var(--kp-text-lg);
+  font-weight: 590;
+  letter-spacing: var(--kp-tracking-label);
+}
+.kp-modal .el-dialog__headerbtn {
+  top: 0;
+  height: auto;
+  width: auto;
+  margin-right: 0;
+}
+.kp-modal .el-dialog__headerbtn .el-dialog__close {
+  color: var(--kp-fg-muted);
+  font-size: 18px;
+  transition: color var(--kp-motion-fast) var(--kp-ease-standard);
+}
+.kp-modal .el-dialog__headerbtn:hover .el-dialog__close,
+.kp-modal .el-dialog__headerbtn:focus .el-dialog__close {
+  color: var(--kp-accent);
+}
+
+/* ---------- 2. 弹层内 EP 组件深色化兜底 ---------- */
+.kp-modal .el-select__wrapper,
+.kp-modal .el-input__wrapper {
+  background-color: var(--kp-surface-raised);
+  box-shadow: 0 0 0 1px var(--kp-border) inset;
+}
+.kp-modal .el-select__placeholder,
+.kp-modal .el-input__inner {
+  color: var(--kp-fg);
+}
+.kp-modal .el-select-dropdown__item,
+.kp-modal .el-select-dropdown {
+  background-color: var(--kp-surface-raised);
+  color: var(--kp-fg);
+}
+.kp-modal .el-select-dropdown__item.is-hovering,
+.kp-modal .el-select-dropdown__item:hover {
+  background-color: var(--kp-glow-soft);
+}
+.kp-modal .el-range__input {
+  color: var(--kp-fg);
+}
+
+/* 滚动条暗色化 */
+.kp-modal .el-dialog__body::-webkit-scrollbar {
+  width: 8px;
+}
+.kp-modal .el-dialog__body::-webkit-scrollbar-thumb {
+  background: var(--kp-border-strong);
+  border-radius: var(--kp-radius-pill);
+}
+.kp-modal .el-dialog__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- 3. 由抽屉改造而来的弹层：标题固定 + 内部滚动 ---------- */
+/* 设备详情 / 楼层钻取：让 .el-dialog__body 成为 flex 列容器，头部固定、内容区内部滚动 */
+.device-detail-modal .el-dialog__body,
+.floor-drill .el-dialog__body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  max-height: 88vh;
+}
+.device-detail-modal .device-detail,
+.floor-drill .fd {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}

@@ -1,0 +1,137 @@
+/* =========================================================================
+ * 大屏 8 种样式框皮肤（纯 CSS，跟随 --kp-accent 主题色变化）
+ * 仅作用于带有 .bs-frame 类的元素（大屏 PanelCard/LeftPanel 传 boxKey 时，
+ * 或后台 DIY 编辑器预览框）。后台管理端 PanelCard 不挂此类，故不受影响。
+ * 优先级（0,3,0）高于 PanelCard 作用域样式（0,2,0），可覆盖其边框/底色/辉光。
+ * ========================================================================= */
+
+.bs-frame {
+  pointer-events: auto;
+  box-sizing: border-box;
+  border: 1px solid var(--box-frame-color, var(--kp-panel-edge));
+  background: rgba(var(--kp-panel-fill-rgb), var(--kp-panel-alpha));
+  border-radius: var(--kp-radius-panel);
+}
+
+/* 默认四角 L 形装饰（PanelCard 自带 .kp-corner），作为 tech 框基础 */
+.bs-frame--tech {
+  border-color: var(--box-frame-color, var(--kp-border-strong));
+  box-shadow: inset 0 0 28px var(--kp-glow-soft);
+}
+
+/* 波浪边角框：隐藏直角 L，顶部/底部用扇贝遮罩模拟波浪边 */
+.bs-frame--wave .kp-corner { display: none; }
+.bs-frame--wave {
+  border-color: var(--box-frame-color, var(--kp-border-strong));
+  border-top: none;
+  border-bottom: none;
+}
+.bs-frame--wave::before,
+.bs-frame--wave::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 9px;
+  background: var(--box-frame-color, var(--kp-accent));
+  box-shadow: 0 0 10px var(--kp-glow);
+  -webkit-mask: radial-gradient(circle at 7px 9px, transparent 6px, #000 6.5px) repeat-x;
+  mask: radial-gradient(circle at 7px 9px, transparent 6px, #000 6.5px) repeat-x;
+  -webkit-mask-size: 14px 14px;
+  mask-size: 14px 14px;
+  pointer-events: none;
+}
+.bs-frame--wave::before { top: -1px; }
+.bs-frame--wave::after {
+  bottom: -1px;
+  transform: scaleY(-1);
+}
+
+/* 树状分支框：隐藏直角 L，四角放置树杈状装饰（用伪元素 + 边框模拟枝丫） */
+.bs-frame--tree .kp-corner { display: none; }
+.bs-frame--tree {
+  border: 1px solid var(--box-frame-color, var(--kp-border-strong));
+}
+.bs-frame--tree::before,
+.bs-frame--tree::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--box-frame-color, var(--kp-accent));
+  box-shadow: 0 0 8px var(--kp-glow);
+  pointer-events: none;
+}
+/* 左上枝丫 */
+.bs-frame--tree::before {
+  top: 6px;
+  left: 6px;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 10px 0 0 0;
+}
+/* 右下枝丫（对称） */
+.bs-frame--tree::after {
+  bottom: 6px;
+  right: 6px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 10px 0;
+}
+
+/* 圆角极简框 */
+.bs-frame--rounded .kp-corner { display: none; }
+.bs-frame--rounded {
+  border: 1px solid var(--box-frame-color, var(--kp-border-strong));
+  border-radius: 16px;
+  box-shadow: inset 0 0 20px var(--kp-glow-soft);
+}
+
+/* 斜切角框：octagon clip + 外发光模拟斜切描边 */
+.bs-frame--bevel .kp-corner { display: none; }
+.bs-frame--bevel {
+  border: 1px solid var(--box-frame-color, var(--kp-accent));
+  clip-path: polygon(
+    14px 0, calc(100% - 14px) 0, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%,
+    0 calc(100% - 14px), 0 14px
+  );
+  filter: drop-shadow(0 0 6px var(--kp-glow));
+  border-radius: 0;
+}
+
+/* 双线框：CSS double 边框 */
+.bs-frame--double .kp-corner { display: none; }
+.bs-frame--double {
+  border: 3px double var(--box-frame-color, var(--kp-accent));
+  box-shadow: 0 0 12px var(--kp-glow-soft);
+}
+
+/* 发光描边框：强辉光 */
+.bs-frame--glow .kp-corner { display: none; }
+.bs-frame--glow {
+  border: 1px solid var(--box-frame-color, var(--kp-accent));
+  box-shadow:
+    0 0 18px var(--kp-glow),
+    0 0 4px var(--kp-glow-strong),
+    inset 0 0 24px var(--kp-glow-soft);
+}
+
+/* 虚线网格框：dashed 边 + 内网格底纹 */
+.bs-frame--grid .kp-corner { display: none; }
+.bs-frame--grid {
+  border: 1px dashed var(--box-frame-color, var(--kp-accent));
+  box-shadow: inset 0 0 18px var(--kp-glow-soft);
+}
+.bs-frame--grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--kp-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--kp-grid-line) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.6), transparent);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.6), transparent);
+}

@@ -1,0 +1,33 @@
+{
+  "name": "kp-hospital-energy-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "开平市中心医院能源管理软件平台 — 前端（3D 数字孪生综合态势大屏 + 后台管理）",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:fast": "vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@tresjs/cientos": "^4.0.3",
+    "@tresjs/core": "^4.3.0",
+    "axios": "^1.13.0",
+    "echarts": "^5.5.1",
+    "element-plus": "^2.13.2",
+    "lucide-vue-next": "^0.468.0",
+    "pinia": "^3.0.4",
+    "three": "^0.171.0",
+    "vue": "^3.5.27",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.171.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vue-tsc": "^2.2.10"
+  }
+}

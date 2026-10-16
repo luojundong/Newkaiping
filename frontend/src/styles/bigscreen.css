@@ -1,0 +1,153 @@
+/* ============================================================
+   大屏专属共享样式（指挥舱视觉语言，绑定 design-tokens --kp-*）
+   仅承载面板内部的通用原子类，组件级布局仍写在各组件 scoped 中。
+   ============================================================ */
+
+.bs-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--kp-bg);
+  color: var(--kp-fg);
+  font-family: var(--kp-font-body);
+}
+
+/* 空态 / 加载态提示 */
+.kp-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 40px;
+  padding: 10px;
+  font-size: var(--kp-text-sm);
+  letter-spacing: 1px;
+  color: var(--kp-fg-muted);
+  text-align: center;
+}
+
+/* 发光的数值主色 */
+.kp-glow-text {
+  color: var(--kp-accent);
+  text-shadow: 0 0 12px var(--kp-glow);
+}
+.kp-mono {
+  font-family: var(--kp-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* KPI 统计网格（2 列，等宽数字） */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* 大屏滚动条（细青色） */
+.bs-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--kp-border-strong) transparent;
+}
+.bs-scroll::-webkit-scrollbar,
+.bs-scroll *::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.bs-scroll::-webkit-scrollbar-thumb,
+.bs-scroll *::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background: var(--kp-border-strong);
+}
+.bs-scroll::-webkit-scrollbar-track,
+.bs-scroll *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 告警等级标签（左面板 alarmItems 用） */
+.level-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  min-width: 30px;
+  padding: 0 6px;
+  border-radius: var(--kp-radius-sm);
+  font-size: var(--kp-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  border: 1px solid currentColor;
+}
+.level-tag--critical {
+  color: var(--kp-danger);
+  background: rgba(255, 77, 94, 0.14);
+  box-shadow: 0 0 8px var(--kp-danger-glow);
+}
+.level-tag--warning {
+  color: var(--kp-warn);
+  background: rgba(255, 192, 67, 0.14);
+  box-shadow: 0 0 8px var(--kp-warn-glow);
+}
+.level-tag--info {
+  color: var(--kp-info);
+  background: rgba(77, 159, 255, 0.14);
+}
+
+/* 数据来源徽标（API 实时 / 演示数据） */
+.bs-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--kp-radius-pill);
+  font-size: var(--kp-text-xs);
+  letter-spacing: 0.5px;
+  border: 1px solid var(--kp-border);
+  background: var(--kp-surface);
+  color: var(--kp-fg-muted);
+  cursor: default;
+}
+.bs-source-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--kp-success);
+  box-shadow: 0 0 8px var(--kp-success-glow);
+}
+.bs-source-chip--fixture {
+  color: var(--kp-warn);
+  border-color: rgba(255, 192, 67, 0.4);
+}
+.bs-source-chip--fixture .bs-source-chip__dot {
+  background: var(--kp-warn);
+  box-shadow: 0 0 8px var(--kp-warn-glow);
+}
+
+/* 卡片小标题（section sub-title） */
+.bs-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 6px;
+  font-size: var(--kp-text-sm);
+  font-weight: 520;
+  letter-spacing: 0.5px;
+  color: var(--kp-fg);
+}
+.bs-subtitle::before {
+  content: '';
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--kp-accent);
+  box-shadow: 0 0 6px var(--kp-glow);
+}
+.bs-subtitle__hint {
+  margin-left: auto;
+  font-size: var(--kp-text-xs);
+  font-weight: 400;
+  color: var(--kp-fg-subtle);
+}

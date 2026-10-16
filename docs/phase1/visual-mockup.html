@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>开平市中心医院能源管理平台 · 大屏骨架视觉稿（MVP 锚点）</title>
+<style>
+  :root{
+    --kp-bg:#04101f; --kp-bg-deep:#030c18; --kp-surface:#0b1827; --kp-surface-raised:#112339;
+    --kp-fg:#e6f7ff; --kp-fg-muted:#8ca8be; --kp-fg-subtle:#5a7a94;
+    --kp-accent:#00e5ff; --kp-accent-secondary:#1be5ad;
+    --kp-border:rgba(0,229,255,0.16); --kp-border-strong:rgba(0,229,255,0.35);
+    --kp-glow-soft:rgba(0,229,255,0.12); --kp-glow:rgba(0,229,255,0.35);
+    --kp-success:#2ee6a6; --kp-warn:#ffc043; --kp-danger:#ff4d5e; --kp-info:#4d9fff;
+    --kp-sys-energy:#00e5ff; --kp-sys-lifecycle:#94a3b8; --kp-sys-hvac:#1be5ad;
+    --kp-sys-lighting:#f59e0b; --kp-sys-power:#3b82f6; --kp-sys-water:#fb923c; --kp-sys-elevator:#f43f5e;
+    --kp-radius-sm:4px; --kp-radius-md:8px; --kp-radius-lg:12px; --kp-radius-pill:9999px;
+    --kp-space-2:8px; --kp-space-3:12px; --kp-space-4:16px; --kp-space-5:20px; --kp-space-6:24px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#02060f;color:var(--kp-fg);font-family:"Inter","Noto Sans SC",-apple-system,"Microsoft YaHei",sans-serif;padding:24px;}
+  .stage{width:100%;max-width:1440px;margin:0 auto;background:var(--kp-bg);border:1px solid var(--kp-border);border-radius:var(--kp-radius-lg);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5);}
+  .stage-caption{font-size:12px;color:var(--kp-fg-subtle);padding:12px 16px;border-bottom:1px solid var(--kp-border);letter-spacing:.04em;}
+  .stage-caption b{color:var(--kp-accent);}
+
+  /* ===== Header ===== */
+  .header{position:relative;height:108px;display:flex;align-items:flex-start;justify-content:space-between;
+    padding:14px 28px 0;background:linear-gradient(180deg,rgba(3,12,24,.94),rgba(3,12,24,.4) 62%,transparent);}
+  .clock{display:flex;flex-direction:column;gap:2px;min-width:230px;padding-top:14px;}
+  .clock strong{font-family:"JetBrains Mono","DIN",monospace;font-size:26px;color:var(--kp-fg);letter-spacing:2px;text-shadow:0 0 14px var(--kp-glow);}
+  .clock span{font-size:12px;color:var(--kp-fg-muted);letter-spacing:1px;}
+  .center{position:absolute;left:50%;top:8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .title{font-size:30px;font-weight:400;letter-spacing:8px;color:#eafcff;text-shadow:0 0 18px var(--kp-glow),0 0 42px var(--kp-glow-soft);white-space:nowrap;}
+  /* dual linkage menu */
+  .dual-menu{display:flex;flex-direction:column;gap:6px;align-items:center;}
+  .floor1{display:flex;gap:6px;align-items:center;background:rgba(2,10,24,.4);border:1px solid var(--kp-border);border-radius:var(--kp-radius-md);padding:5px 8px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:var(--kp-radius-pill);border:1px solid var(--kp-border);background:transparent;color:var(--kp-fg-muted);font-size:13px;letter-spacing:.04em;position:relative;cursor:pointer;transition:all .2s ease;}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--kp-success);box-shadow:0 0 6px var(--kp-success);}
+  .pill.all{font-weight:600;}
+  .pill.active{background:var(--kp-glow-soft);color:var(--kp-accent);border-color:var(--kp-accent);}
+  .pill.active::after{content:"";position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:70%;height:2px;background:var(--kp-accent);box-shadow:0 0 6px var(--kp-glow);border-radius:1px;}
+  .floor2{display:flex;gap:4px;background:rgba(2,10,24,.35);border:1px solid var(--kp-border);border-radius:var(--kp-radius-sm);padding:4px 6px;}
+  .tab{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:none;border-radius:var(--kp-radius-sm);background:transparent;color:var(--kp-fg-muted);font-size:13px;letter-spacing:.04em;cursor:pointer;transition:all .2s ease;position:relative;}
+  .tab svg{width:18px;height:18px;}
+  .tab.active{color:var(--kp-accent);background:linear-gradient(180deg,var(--kp-glow-soft),transparent);}
+  .tab.active svg{filter:drop-shadow(0 0 4px var(--kp-glow));}
+  .tab.active::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%) scaleX(1);width:70%;height:2px;background:var(--kp-accent);box-shadow:0 0 6px var(--kp-glow);border-radius:1px;}
+  .tools{display:flex;gap:12px;align-items:center;padding-top:14px;}
+  .tool{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 12px;border:1px solid var(--kp-border);background:rgba(11,24,39,.6);color:var(--kp-fg);font-size:13px;border-radius:var(--kp-radius-sm);cursor:pointer;}
+  .tool.realtime.active{background:rgba(0,229,255,.18);border-color:var(--kp-accent);color:var(--kp-accent);}
+  .tool.realtime.active svg{animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(1.15);}}
+
+  /* ===== Body ===== */
+  .body{display:grid;grid-template-columns:340px 1fr 340px;height:560px;}
+  .panel{background:linear-gradient(180deg,rgba(11,24,39,.9),rgba(4,16,31,.9));border-right:1px solid var(--kp-border);padding:18px;display:flex;flex-direction:column;gap:14px;overflow:hidden;}
+  .panel.right{border-right:none;border-left:1px solid var(--kp-border);}
+  .panel-title{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--kp-fg);letter-spacing:.06em;font-weight:600;}
+  .panel-title .bar{width:3px;height:14px;background:var(--kp-accent);box-shadow:0 0 8px var(--kp-glow);border-radius:2px;}
+  .card{background:var(--kp-surface);border:1px solid var(--kp-border);border-radius:var(--kp-radius-md);padding:14px;}
+  .card .lbl{font-size:12px;color:var(--kp-fg-muted);}
+  .card .val{font-family:"JetBrains Mono",monospace;font-size:26px;color:var(--kp-fg);margin-top:4px;text-shadow:0 0 12px var(--kp-glow-soft);}
+  .card .unit{font-size:12px;color:var(--kp-fg-subtle);margin-left:4px;}
+  .alarm{display:flex;flex-direction:column;gap:8px;}
+  .alarm-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--kp-surface);border:1px solid var(--kp-border);border-left:3px solid var(--kp-danger);border-radius:var(--kp-radius-sm);}
+  .alarm-row.warn{border-left-color:var(--kp-warn);}
+  .alarm-row .t{font-size:12px;color:var(--kp-fg);}
+  .alarm-row .m{font-size:11px;color:var(--kp-fg-muted);}
+  .alarm-row .lv{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:var(--kp-radius-pill);}
+  .lv.crit{color:var(--kp-danger);background:rgba(255,77,94,.15);}
+  .lv.w{color:var(--kp-warn);background:rgba(255,192,67,.15);}
+
+  /* 3D viewport placeholder */
+  .viewport{position:relative;background:radial-gradient(circle at 50% 42%,rgba(0,229,255,.10),transparent 40%),#030c18;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .viewport .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.05) 1px,transparent 1px);background-size:40px 40px;opacity:.5;}
+  .building{display:flex;gap:18px;align-items:flex-end;}
+  .b{width:46px;background:linear-gradient(180deg,rgba(0,229,255,.25),rgba(0,229,255,.05));border:1px solid var(--kp-border-strong);border-radius:4px 4px 0 0;position:relative;display:flex;align-items:flex-start;justify-content:center;color:var(--kp-fg-subtle);font-size:10px;padding-top:4px;}
+  .b.sel{background:linear-gradient(180deg,rgba(0,229,255,.5),rgba(0,229,255,.1));box-shadow:0 0 20px var(--kp-glow);border-color:var(--kp-accent);}
+  .b.alarm{border-color:var(--kp-danger);box-shadow:0 0 16px rgba(255,77,94,.5);}
+  .vp-label{position:absolute;bottom:14px;left:16px;font-size:12px;color:var(--kp-fg-muted);letter-spacing:.04em;}
+  .vp-badge{position:absolute;top:14px;right:16px;font-size:11px;color:var(--kp-accent);border:1px solid var(--kp-border);border-radius:var(--kp-radius-pill);padding:4px 10px;background:rgba(0,229,255,.08);}
+  .vp-hint{position:absolute;top:14px;left:16px;font-size:11px;color:var(--kp-fg-subtle);}
+
+  /* right subsystem mini cards */
+  .sysgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .sys{background:var(--kp-surface);border:1px solid var(--kp-border);border-radius:var(--kp-radius-md);padding:12px;display:flex;flex-direction:column;gap:6px;}
+  .sys .top{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--kp-fg);}
+  .sys .top svg{width:18px;height:18px;}
+  .sys .top .k{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:16px;}
+  .sys .sub{font-size:11px;color:var(--kp-fg-muted);}
+  .sys.hvac .top svg{color:var(--kp-sys-hvac);} .sys.hvac .top .k{color:var(--kp-sys-hvac);}
+  .sys.light .top svg{color:var(--kp-sys-lighting);} .sys.light .top .k{color:var(--kp-sys-lighting);}
+  .sys.power .top svg{color:var(--kp-sys-power);} .sys.power .top .k{color:var(--kp-sys-power);}
+  .sys.water .top svg{color:var(--kp-sys-water);} .sys.water .top .k{color:var(--kp-sys-water);}
+  .sys.elev .top svg{color:var(--kp-sys-elevator);} .sys.elev .top .k{color:var(--kp-sys-elevator);}
+  .sys.life .top svg{color:var(--kp-sys-lifecycle);} .sys.life .top .k{color:var(--kp-sys-lifecycle);}
+  .sys.energy .top svg{color:var(--kp-sys-energy);} .sys.energy .top .k{color:var(--kp-sys-energy);}
+
+  /* bottom bar */
+  .bottom{height:140px;border-top:1px solid var(--kp-border);background:linear-gradient(180deg,rgba(4,16,31,.95),rgba(3,12,24,.95));display:grid;grid-template-columns:1fr 260px 260px;gap:16px;padding:16px 24px;}
+  .trend{background:var(--kp-surface);border:1px solid var(--kp-border);border-radius:var(--kp-radius-md);padding:12px;display:flex;flex-direction:column;gap:8px;}
+  .trend .head{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--kp-fg);}
+  .spark{height:54px;display:flex;align-items:flex-end;gap:3px;}
+  .spark i{flex:1;background:linear-gradient(180deg,var(--kp-accent),rgba(0,229,255,.2));border-radius:2px 2px 0 0;}
+  .pie{background:var(--kp-surface);border:1px solid var(--kp-border);border-radius:var(--kp-radius-md);padding:12px;display:flex;align-items:center;justify-content:center;gap:14px;}
+  .donut{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--kp-success) 0 64%,var(--kp-warn) 64% 82%,var(--kp-danger) 82% 88%,var(--kp-fg-subtle) 88% 100%);}
+  .legend{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--kp-fg-muted);}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;}
+  .emerg{background:var(--kp-surface);border:1px solid var(--kp-border);border-radius:var(--kp-radius-md);padding:12px;display:flex;flex-direction:column;gap:10px;justify-content:center;}
+  .emerg .btn{height:38px;border:1px solid var(--kp-border);background:rgba(11,24,39,.8);color:var(--kp-fg);border-radius:var(--kp-radius-sm);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .emerg .btn.danger{border-color:var(--kp-danger);color:var(--kp-danger);background:rgba(255,77,94,.1);}
+
+  .note{font-size:12px;color:var(--kp-fg-subtle);line-height:1.7;padding:12px 16px;border-top:1px solid var(--kp-border);}
+  .note b{color:var(--kp-accent);}
+  svg{stroke-width:1.6;}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="stage-caption">视觉稿 · <b>MVP 锚点：双联动顶部菜单 + 大屏骨架</b> · 分辨率基准 3840×2160（此处等比缩至 1440 宽预览） · 主题：深蓝指挥舱（背景 #04101f / 强调 #00e5ff）</div>
+
+    <!-- Header -->
+    <header class="header">
+      <div class="clock">
+        <strong>14:32:08</strong>
+        <span>2026-08-17 星期日</span>
+      </div>
+
+      <div class="center">
+        <div class="title">开平市中心医院能源管理平台</div>
+        <div class="dual-menu">
+          <!-- 一级：楼栋 + 全院总览 -->
+          <div class="floor1">
+            <button class="pill all active">全院总览</button>
+            <button class="pill"><span class="dot"></span>1号·急救</button>
+            <button class="pill"><span class="dot"></span>2号·门诊</button>
+            <button class="pill"><span class="dot" style="background:var(--kp-warn);box-shadow:0 0 6px var(--kp-warn)"></span>3号·住院</button>
+            <button class="pill"><span class="dot"></span>4号·妇儿</button>
+            <button class="pill"><span class="dot"></span>5号·张襯</button>
+            <button class="pill"><span class="dot"></span>6号·后勤</button>
+            <button class="pill"><span class="dot"></span>7号·药剂</button>
+            <button class="pill"><span class="dot"></span>8号·放疗</button>
+            <button class="pill"><span class="dot"></span>9号·综合</button>
+            <button class="pill"><span class="dot"></span>10号·宿舍</button>
+          </div>
+          <!-- 二级：子系统 -->
+          <div class="floor2">
+            <button class="tab active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 4"/></svg>能源一体化</button>
+            <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></svg>设备生命周期</button>
+            <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>空调</button>
+            <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18h6M10 21h4M12 3a6 6 0 016 6c0 3-2 4-2 7H8c0-3-2-4-2-7a6 6 0 016-6z"/></svg>照明</button>
+            <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>电力</button>
+            <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3s6 6 6 11a6 6 0 01-12 0c0-5 6-11 6-11z"/></svg>热水</button>
+            <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>电梯</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tools">
+        <button class="tool realtime active"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="2"/><path d="M4 12a8 8 0 0116 0"/></svg>实时中</button>
+        <button class="tool"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 8a4 4 0 010 8M12 3v2M12 19v2"/></svg>主题</button>
+        <button class="tool"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2"/></svg>晴</button>
+        <button class="tool"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>admin</button>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="body">
+      <!-- Left panel -->
+      <aside class="panel">
+        <div class="panel-title"><span class="bar"></span>实时告警</div>
+        <div class="alarm">
+          <div class="alarm-row"><div><div class="t">3号楼 住院大楼 · 中央空调机组超温</div><div class="m">制冷主机出水温度 14.2℃ 超阈值 12℃</div></div><span class="lv crit">严重</span></div>
+          <div class="alarm-row warn"><div><div class="t">2号楼 门诊 · 5F 照明回路异常</div><div class="m">分区照明的能耗突增 38%</div></div><span class="lv w">预警</span></div>
+          <div class="alarm-row"><div><div class="t">9号楼 综合 · 热泵机组正常</div><div class="m">运行电流 18.6A 处于安全区间</div></div><span class="lv crit" style="color:var(--kp-success);background:rgba(46,230,166,.15)">正常</span></div>
+        </div>
+        <div class="panel-title"><span class="bar"></span>今日能耗概览</div>
+        <div class="card"><div class="lbl">全院当日用电</div><div class="val">8,642<span class="unit">kWh</span></div></div>
+        <div class="card"><div class="lbl">设备在线率</div><div class="val">97.3<span class="unit">%</span></div></div>
+      </aside>
+
+      <!-- 3D viewport -->
+      <main class="viewport">
+        <div class="grid"></div>
+        <div class="vp-hint">3D 孪生视口（Three.js / TresJS，hospital.glb 占位）</div>
+        <div class="vp-badge">镜头：全院鸟瞰</div>
+        <div class="building">
+          <div class="b" style="height:120px">1</div>
+          <div class="b" style="height:160px">2</div>
+          <div class="b sel" style="height:200px">3</div>
+          <div class="b" style="height:140px">4</div>
+          <div class="b" style="height:110px">5</div>
+          <div class="b" style="height:90px">6</div>
+          <div class="b" style="height:100px">7</div>
+          <div class="b alarm" style="height:130px">8</div>
+          <div class="b" style="height:170px">9</div>
+          <div class="b" style="height:80px">10</div>
+        </div>
+        <div class="vp-label">点击楼栋 → 镜头飞行 + 面板联动 · 点击设备点位 → 详情弹窗</div>
+      </main>
+
+      <!-- Right panel -->
+      <aside class="panel right">
+        <div class="panel-title"><span class="bar"></span>7 大子系统指标</div>
+        <div class="sysgrid">
+          <div class="sys energy"><div class="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 4"/></svg>能源一体化<span class="k">8.6M</span></div><div class="sub">当日综合用能 kWh</div></div>
+          <div class="sys life"><div class="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></svg>设备生命周期<span class="k">1701</span></div><div class="sub">台账设备总数</div></div>
+          <div class="sys hvac"><div class="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>空调<span class="k">1626</span></div><div class="sub">分体机在线</div></div>
+          <div class="sys light"><div class="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18h6M10 21h4M12 3a6 6 0 016 6c0 3-2 4-2 7H8c0-3-2-4-2-7a6 6 0 016-6z"/></svg>照明<span class="k">92%</span></div><div class="sub">节能策略覆盖率</div></div>
+          <div class="sys power"><div class="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>电力<span class="k">4.2</span></div><div class="sub">峰值负荷 MW</div></div>
+          <div class="sys water"><div class="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3s6 6 6 11a6 6 0 01-12 0c0-5 6-11 6-11z"/></svg>热水<span class="k">20</span></div><div class="sub">热泵机组运行</div></div>
+          <div class="sys elev"><div class="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>电梯<span class="k">18</span></div><div class="sub">储能回馈装置</div></div>
+        </div>
+        <div class="panel-title"><span class="bar"></span>科室告警分布</div>
+        <div class="card"><div class="lbl">住院大楼（3号）</div><div class="val">12<span class="unit">条</span></div></div>
+      </aside>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottom">
+      <div class="trend">
+        <div class="head"><span class="bar" style="width:3px;height:14px;background:var(--kp-accent);border-radius:2px;display:inline-block"></span>能耗趋势（24h）</div>
+        <div class="spark">
+          <i style="height:30%"></i><i style="height:42%"></i><i style="height:38%"></i><i style="height:55%"></i><i style="height:60%"></i><i style="height:48%"></i><i style="height:70%"></i><i style="height:65%"></i><i style="height:80%"></i><i style="height:72%"></i><i style="height:85%"></i><i style="height:90%"></i><i style="height:78%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:50%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:36%"></i><i style="height:33%"></i>
+        </div>
+      </div>
+      <div class="pie">
+        <div class="donut"></div>
+        <div class="legend">
+          <div><i style="background:var(--kp-success)"></i>正常 64%</div>
+          <div><i style="background:var(--kp-warn)"></i>预警 18%</div>
+          <div><i style="background:var(--kp-danger)"></i>严重 6%</div>
+          <div><i style="background:var(--kp-fg-subtle)"></i>离线 12%</div>
+        </div>
+      </div>
+      <div class="emerg">
+        <button class="btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><path d="M12 3v12M12 21v.01"/></svg>生成能源自审报告</button>
+        <button class="btn danger"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><path d="M12 9v4M12 17v.01M10.3 3.9 1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>应急联动处置</button>
+      </div>
+    </div>
+
+    <div class="note">
+      说明：本视觉稿为 <b>MVP 锚点</b>（双联动顶部菜单 + 大屏骨架），落实 PM §13 与架构 ADR-001/002：
+      ① 图标统一 <b>lucide-vue-next</b>（SVG 线性，无 emoji）；② 主题默认 <b>深蓝指挥舱 #04101f / #00e5ff</b>，明确不内置紫→粉渐变；
+      ③ 告警三态 <b>红/黄/绿</b> 按 DCI-P3 高饱和调校；④ 顶部菜单 <b>楼栋 1–10 + 全院总览 × 子系统 7</b> 正交联动；
+      ⑤ 文案为真实中文业务文案（如“正在加载开平市中心医院能源数据…”）。点击楼栋胶囊/子系统页签即可体验联动高亮。
+    </div>
+  </div>
+</body>
+</html>

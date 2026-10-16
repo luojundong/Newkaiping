@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Panorama Sphere Test</title>
+<style>
+body { margin: 0; overflow: hidden; background: #04101f; }
+#info { position: absolute; top: 10px; left: 10px; color: #fff; font-family: sans-serif; z-index: 10; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.171.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.171.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="info">Drag to rotate | Scroll to zoom</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#000000');
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 3000);
+camera.position.set(74, 56, 102);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.target.set(30, 20, 0);
+controls.maxPolarAngle = Math.PI / 2.1;
+controls.minDistance = 18;
+controls.maxDistance = 600;
+
+const loader = new THREE.TextureLoader();
+loader.crossOrigin = 'anonymous';
+const url = 'http://localhost:8098/msh8ev90.png';
+loader.load(url, (tex) => {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const geo = new THREE.SphereGeometry(2000, 64, 32);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, depthWrite: false });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.name = 'kp-panorama-sphere';
+  mesh.renderOrder = -1000;
+  scene.add(mesh);
+  console.log('loaded', tex.image.width, tex.image.height);
+}, undefined, (e) => {
+  console.error('load error', e);
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

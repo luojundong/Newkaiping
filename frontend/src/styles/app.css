@@ -1,0 +1,188 @@
+/* 开平市中心医院能源管理平台 — 全局基础样式
+ * 设计 Token 来自 docs/phase1/design-tokens.css（design-tokens.css 已在本文件之前 import）
+ * 图标仅使用 lucide-vue-next（ADR-002），禁止 emoji / 其他图标库。
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background: var(--kp-bg);
+  color: var(--kp-fg);
+  font-family: var(--kp-font-body);
+  font-size: var(--kp-text-md);
+  line-height: var(--kp-leading-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+#app {
+  position: relative;
+}
+
+a {
+  color: var(--kp-accent);
+  text-decoration: none;
+}
+
+/* 数字统一使用等宽字体（设备编号、功率、电量、时间戳） */
+.mono,
+.kp-num {
+  font-family: var(--kp-font-mono);
+  letter-spacing: var(--kp-tracking-label);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 通用滚动条（大屏深色风格） */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--kp-border-strong);
+  border-radius: var(--kp-radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--kp-accent);
+}
+
+/* 焦点环（无障碍：所有可交互元素） */
+:focus-visible {
+  outline: var(--kp-focus-ring);
+  outline-offset: 2px;
+}
+
+/* 通用面板卡片（参考 hud-dashboard-style-spec v1：钢蓝实边 + 4px 圆角 + 青色四角描边） */
+.kp-panel {
+  position: relative;
+  border: 1px solid var(--kp-panel-edge);
+  border-radius: var(--kp-radius-panel);
+  background: rgba(var(--kp-panel-fill-rgb), var(--kp-panel-alpha));
+  box-shadow: inset 0 0 28px var(--kp-glow-soft);
+}
+
+/* 四角 L 形描边：外侧圆角与面板同径，贴合参考页观感 */
+.kp-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--kp-accent);
+  border-style: solid;
+  z-index: 2;
+  pointer-events: none;
+}
+.kp-corner--tl {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+  border-top-left-radius: var(--kp-radius-panel);
+}
+.kp-corner--tr {
+  top: -1px;
+  right: -1px;
+  border-width: 2px 2px 0 0;
+  border-top-right-radius: var(--kp-radius-panel);
+}
+.kp-corner--bl {
+  bottom: -1px;
+  left: -1px;
+  border-width: 0 0 2px 2px;
+  border-bottom-left-radius: var(--kp-radius-panel);
+}
+.kp-corner--br {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+  border-bottom-right-radius: var(--kp-radius-panel);
+}
+
+/* 面板标题栏：无底色填充，靠「青色竖条 + 从左向右淡出的渐变下划线」建立层级 */
+.kp-panel-title {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--kp-panel-title-h);
+  padding: 0 12px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+  font-size: var(--kp-text-lg);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--kp-fg);
+  background: transparent;
+  border-bottom: none;
+}
+.kp-panel-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--kp-accent) 0%, transparent 100%);
+}
+.kp-panel-title svg {
+  color: var(--kp-accent);
+  flex-shrink: 0;
+}
+
+/* 状态色块（颜色不是唯一信息载体，组件中会配合图标+文字） */
+.kp-status-normal { color: var(--kp-status-normal); }
+.kp-status-warning { color: var(--kp-status-warning); }
+.kp-status-critical { color: var(--kp-status-critical); }
+.kp-status-offline { color: var(--kp-status-offline); }
+.kp-status-unknown { color: var(--kp-status-unknown); }
+
+/* 加载/空态/错误态通用文案 */
+.kp-empty,
+.kp-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  min-height: 80px;
+  color: var(--kp-fg-muted);
+  font-size: var(--kp-text-sm);
+  text-align: center;
+  padding: 16px;
+}
+.kp-error { color: var(--kp-danger); }
+
+/* 动画：实时脉冲（仅用于"实时中"指示，功能属性，非装饰） */
+@keyframes kp-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes kp-ring-spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* 尊重用户的减弱动效偏好（无障碍） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,642 @@
+/**
+ * 大屏舞台层 —— 1920×1080 固定舞台 + 等比缩放 + 7 屏容器 + 参考页几何
+ * 契约：docs/design/bigscreen-ref-style-v2.md §2/§3/§5/§6/§7
+ *
+ * ★ 本文件是「样式完全不一样」的结构性根因修复：
+ *   改造前 .bs-scale-wrap 是 position:fixed + 100vw/100vh 流式布局，面板按百分比定位，
+ *   与参考页 1920×1080 固定舞台 + transform:scale() 的像素几何**永远对不齐**。
+ *   现改回参考页模型（#stage L24-29），附带收益：后台「布局 DIY」画布本来就是 1920×1080+scale，
+ *   自此与真实大屏 1:1 所见即所得。
+ *
+ * P0 规则：本文件零硬编码色值，全部走 --kp-* 令牌（唯一可定义色值的文件是 design-tokens.css）。
+ * 作用域：所有选择器限定在 .bs-stage 内，绝不污染后台页 / Element Plus。
+ */
+
+/* =====================================================================
+   1. 外壳 + 舞台（参考页 body / #stage）
+   ===================================================================== */
+
+/* 外壳：铺满视口，承接缩放留白。
+   ★ 底色铁律 v2：必须是 --kp-bg-deep —— styleToCssVars() 会把后台「大屏样式 DIY」的背景底色
+   以行内变量注入本元素，换成渐变会永久盖掉 DIY 背景色（功能回归）。
+   参考页「顶部更亮」的观感由 .bs-shell__halo 的透明光晕叠加实现，只提亮不遮挡。 */
+.bs-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--kp-bg-deep);
+}
+
+/* 缩放留白的深空光晕（参考页 body::before，透明→transparent，安全叠加） */
+.bs-shell__halo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--kp-shell-halo);
+}
+
+/* 舞台：固定 1920×1080，居中锚定，transform:scale() 等比缩放（参考页 #stage L24-29）。
+   --bs-scale 由 BigScreenLayout.vue 按 min(vw/1920, vh/1080) 实时计算注入。 */
+.bs-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -960px;
+  margin-top: -540px;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: 50% 50%;
+  transform: scale(var(--bs-scale, 1));
+  overflow: hidden;
+  user-select: none;
+  /* 舞台自身不铺实底渐变：图1 需要透出全屏 3D。
+     图2-7 由 .bs-screen--flat 各自挂 --kp-bg-shell。 */
+  background: transparent;
+  color: var(--kp-fg-body);
+  font-family: var(--kp-font-body);
+}
+
+/* 舞台 60px 科技网格（参考页 #stage::before） */
+.bs-stage__grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    linear-gradient(var(--kp-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--kp-grid-line) 1px, transparent 1px);
+  background-size: var(--kp-grid-size) var(--kp-grid-size);
+}
+
+/* =====================================================================
+   2. 通用文字（参考页 .t1-.t4 / .num / .unit / .lbl）
+   ===================================================================== */
+.bs-stage .t1 { color: var(--kp-fg); }
+.bs-stage .t2 { color: var(--kp-fg-body); }
+.bs-stage .t3 { color: var(--kp-fg-muted); }
+.bs-stage .t4 { color: var(--kp-fg-subtle); }
+.bs-stage .num {
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  font-size: 27px;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+.bs-stage .unit {
+  font-size: var(--kp-text-sm);
+  color: var(--kp-fg-subtle);
+  margin-left: 4px;
+  font-weight: 400;
+}
+.bs-stage .lbl { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); }
+
+/* =====================================================================
+   3. 面板 Chrome（参考页 .panel / .c / .p-hd / .p-bar / .p-title / .p-bd）
+   ===================================================================== */
+.bs-stage .bs-panel {
+  position: absolute;
+  background: rgba(var(--kp-panel-fill-rgb), var(--kp-panel-alpha));
+  border: 1px solid var(--kp-panel-edge);
+  border-radius: var(--kp-radius-panel);
+}
+/* 四角青色描角（12px / 2px） */
+.bs-stage .bs-panel .c {
+  position: absolute;
+  width: var(--kp-corner-size);
+  height: var(--kp-corner-size);
+  pointer-events: none;
+}
+.bs-stage .bs-panel .c.tl {
+  left: -1px;
+  top: -1px;
+  border-left: var(--kp-corner-width) solid var(--kp-accent);
+  border-top: var(--kp-corner-width) solid var(--kp-accent);
+  border-top-left-radius: var(--kp-radius-panel);
+}
+.bs-stage .bs-panel .c.tr {
+  right: -1px;
+  top: -1px;
+  border-right: var(--kp-corner-width) solid var(--kp-accent);
+  border-top: var(--kp-corner-width) solid var(--kp-accent);
+  border-top-right-radius: var(--kp-radius-panel);
+}
+.bs-stage .bs-panel .c.bl {
+  left: -1px;
+  bottom: -1px;
+  border-left: var(--kp-corner-width) solid var(--kp-accent);
+  border-bottom: var(--kp-corner-width) solid var(--kp-accent);
+  border-bottom-left-radius: var(--kp-radius-panel);
+}
+.bs-stage .bs-panel .c.br {
+  right: -1px;
+  bottom: -1px;
+  border-right: var(--kp-corner-width) solid var(--kp-accent);
+  border-bottom: var(--kp-corner-width) solid var(--kp-accent);
+  border-bottom-right-radius: var(--kp-radius-panel);
+}
+/* 标题栏 36px + 渐变下划线 */
+.bs-stage .p-hd {
+  position: relative;
+  height: var(--kp-panel-title-h);
+  display: flex;
+  align-items: center;
+  gap: var(--kp-space-2);
+  padding: 0 var(--kp-space-3);
+}
+.bs-stage .p-hd::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--kp-accent) 0%, rgba(var(--kp-accent-rgb), 0) 100%);
+}
+.bs-stage .p-bar {
+  width: 4px;
+  height: 16px;
+  background: var(--kp-accent);
+  flex: none;
+}
+.bs-stage .p-title {
+  font-size: var(--kp-panel-title-size);
+  color: var(--kp-fg);
+  letter-spacing: var(--kp-panel-title-tracking);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bs-stage .p-chev {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: var(--kp-accent);
+  opacity: 0.85;
+}
+.bs-stage .p-bd {
+  position: relative;
+  padding: 14px;
+  height: calc(100% - var(--kp-panel-title-h));
+  overflow: hidden;
+}
+
+/* 可下钻面板（图1 的 S 卡）：hover 提示可点 */
+.bs-stage .bs-panel--drill { cursor: pointer; transition: border-color var(--kp-motion-fast) var(--kp-ease-standard), box-shadow var(--kp-motion-fast) var(--kp-ease-standard); }
+.bs-stage .bs-panel--drill:hover {
+  border-color: var(--kp-accent);
+  box-shadow: 0 0 18px rgba(var(--kp-accent-rgb), 0.22);
+}
+.bs-stage .bs-panel--drill:hover .p-chev { opacity: 1; }
+
+/* =====================================================================
+   4. 顶栏（参考页 .topnav / .ntab，48px 高，z60）
+   ===================================================================== */
+.bs-stage .bs-topnav {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: var(--kp-topnav-h);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 22px;
+  background: var(--kp-topnav-bg);
+  border-bottom: 1px solid var(--kp-border-strong);
+}
+.bs-stage .bs-topnav .brand {
+  font-size: var(--kp-panel-title-size);
+  font-weight: 700;
+  color: var(--kp-fg);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(var(--kp-accent-rgb), 0.45);
+}
+.bs-stage .bs-topnav .brand small {
+  display: block;
+  font-size: 10px;
+  color: var(--kp-fg-subtle);
+  letter-spacing: 2px;
+  font-weight: 400;
+}
+.bs-stage .bs-topnav .tabs {
+  margin-left: auto;
+  display: flex;
+  gap: var(--kp-space-2);
+}
+.bs-stage .ntab {
+  height: 32px;
+  padding: 0 var(--kp-space-4);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: rgba(var(--kp-panel-fill-rgb), 0.7);
+  border: 1px solid var(--kp-panel-edge);
+  border-radius: var(--kp-radius-panel);
+  font-size: var(--kp-text-md);
+  color: var(--kp-fg-muted);
+  white-space: nowrap;
+  transition: all var(--kp-motion-fast) var(--kp-ease-standard);
+}
+.bs-stage .ntab:hover { border-color: var(--kp-accent); color: var(--kp-fg); }
+.bs-stage .ntab.on {
+  background: var(--kp-accent);
+  border-color: var(--kp-accent);
+  color: var(--kp-bg);
+  font-weight: 700;
+}
+.bs-stage .ntab .ni {
+  font-size: var(--kp-text-xs);
+  color: rgba(var(--kp-bg-rgb), 0.6);
+  font-weight: 700;
+}
+/* 非选中态的序号徽标需要可读（参考页仅定义了选中态色） */
+.bs-stage .ntab:not(.on) .ni { color: var(--kp-fg-subtle); }
+
+/* 顶栏右侧工具组（主题 / 语言 / 用户）—— 项目特有，参考页无，样式与 .ntab 同族 */
+.bs-stage .bs-topnav__tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =====================================================================
+   5. 屏容器（参考页 .screen / .screen.on）
+   ===================================================================== */
+.bs-stage .bs-screen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  display: none;
+  /* z-index:10 高于全屏 3D 场景(z1)与科技网格(z2)：
+   * 图2-7 由 .bs-screen--flat 的 --kp-bg-shell 实底遮住 3D；
+   * 图1 透明、3D 从缝隙透出。低于顶栏(z60)/遮罩(z55)。 */
+  z-index: 10;
+}
+.bs-stage .bs-screen.is-on { display: block; }
+
+/* 图2-7 为「无 3D 的平面屏」：挂深空渐变实底，遮住底层 3D（图1 才需要透出模型） */
+.bs-stage .bs-screen--flat {
+  background: var(--kp-bg-shell);
+}
+
+/* =====================================================================
+   6. 图1 主驾驶舱几何（参考页 #scr1）
+   ===================================================================== */
+
+/* 标题栏 [40,48,1840,72]，底部居中渐隐分割线 */
+.bs-stage .bs-title {
+  position: absolute;
+  left: 40px;
+  top: var(--kp-topnav-h);
+  width: 1840px;
+  height: 72px;
+  z-index: 16;
+}
+.bs-stage .bs-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--kp-accent-rgb), 0) 0%,
+    rgba(var(--kp-accent-rgb), 0.55) 50%,
+    rgba(var(--kp-accent-rgb), 0) 100%
+  );
+}
+.bs-stage .tb-mid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  text-align: center;
+  pointer-events: none;
+}
+.bs-stage .tb-mid h1 {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  letter-spacing: 6px;
+  text-shadow: 0 0 12px rgba(var(--kp-accent-rgb), 0.55);
+}
+.bs-stage .tb-mid .sub {
+  margin-top: 4px;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-fg-subtle);
+  letter-spacing: 3px;
+}
+.bs-stage .tb-left {
+  position: absolute;
+  left: var(--kp-space-2);
+  top: 22px;
+  display: flex;
+  align-items: center;
+  gap: var(--kp-space-4);
+}
+.bs-stage .wx {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--kp-fg-body);
+}
+.bs-stage .wx .v { font-size: var(--kp-text-lg); font-weight: 700; color: var(--kp-fg-strong); }
+.bs-stage .wx .s { color: var(--kp-fg-muted); font-size: var(--kp-text-sm); }
+.bs-stage .tb-sep { width: 1px; height: 18px; background: rgba(var(--kp-accent-rgb), 0.28); }
+.bs-stage .tb-right { position: absolute; right: var(--kp-space-2); top: var(--kp-space-4); text-align: right; }
+.bs-stage .tb-right .d { font-size: 13px; color: var(--kp-fg-muted); letter-spacing: 1px; }
+.bs-stage .tb-right .t {
+  font-size: var(--kp-text-3xl);
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  letter-spacing: 2px;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 楼栋导航 [40,128,1840,56]，横向居中 */
+.bs-stage .bs-bldnav {
+  position: absolute;
+  left: 40px;
+  top: 128px;
+  width: 1840px;
+  height: 56px;
+  z-index: 16;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.bs-stage .btab {
+  height: 36px;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  gap: var(--kp-space-2);
+  background: rgba(var(--kp-panel-fill-rgb), var(--kp-panel-alpha));
+  border: 1px solid var(--kp-panel-edge);
+  border-radius: var(--kp-radius-panel);
+  font-size: var(--kp-text-md);
+  color: var(--kp-fg-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--kp-motion-fast) var(--kp-ease-standard);
+}
+.bs-stage .btab .idx { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); font-variant-numeric: tabular-nums; }
+.bs-stage .btab:hover { border-color: var(--kp-accent); color: var(--kp-fg); }
+.bs-stage .btab.on {
+  background: var(--kp-accent);
+  border-color: var(--kp-accent);
+  color: var(--kp-bg);
+  font-weight: 700;
+}
+.bs-stage .btab.on .idx { color: rgba(var(--kp-bg-rgb), 0.65); }
+
+/* 全屏 3D 场景 [0,0,1920,1080] z1 —— 图1 专属，位于所有面板之下 */
+.bs-stage .bs-scene {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  z-index: 1;
+  /* 模型加载前的容器底：跟随 DIY 背景色。
+     不可用 --kp-stage-bg（那个令牌专供「无 3D 的平面画布」= 后台样式/布局 DIY 预览）。 */
+  background: var(--kp-bg);
+}
+.bs-stage .bs-scene .three-viewer { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* 楼层列表 [480,200,120,380] z20（透明底，仅按钮可见） */
+.bs-stage .bs-floorlist {
+  position: absolute;
+  left: 480px;
+  top: 200px;
+  width: 120px;
+  height: 380px;
+  z-index: 20;
+  background: transparent;
+  overflow: hidden;
+}
+.bs-stage .bs-floorlist .p-bd {
+  padding: var(--kp-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: stretch;
+  height: 100%;
+}
+.bs-stage .fl {
+  width: 100%;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--kp-fg-muted);
+  background: rgba(var(--kp-edge-rgb), 0.22);
+  border: 1px solid var(--kp-panel-edge);
+  border-radius: 3px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: all var(--kp-motion-fast) var(--kp-ease-standard);
+}
+.bs-stage .fl:hover { border-color: var(--kp-accent); color: var(--kp-fg); }
+.bs-stage .fl.on {
+  background: rgba(var(--kp-accent-rgb), 0.18);
+  border-color: var(--kp-accent);
+  color: var(--kp-fg-strong);
+  font-weight: 700;
+  box-shadow: inset 0 0 10px rgba(var(--kp-accent-rgb), 0.25);
+}
+
+/* 图1 面板层级：悬浮于全屏 3D 之上 */
+.bs-stage .bs-screen--1 .bs-panel { z-index: 12; }
+
+/* 图1 列面板：左 40 / 右 1460，宽 420 */
+.bs-stage .bs-screen--1 .col-l,
+.bs-stage .bs-screen--1 .col-r { width: 420px; }
+.bs-stage .bs-screen--1 .col-l { left: 40px; }
+.bs-stage .bs-screen--1 .col-r { left: 1460px; }
+/* 左列 4 张 h212 */
+.bs-stage .pL1 { top: 192px; }
+.bs-stage .pL2 { top: 412px; }
+.bs-stage .pL3 { top: 632px; }
+.bs-stage .pL4 { top: 852px; }
+.bs-stage .h212 { height: 212px; }
+/* 右列 3 张 h288 */
+.bs-stage .p192 { top: 192px; }
+.bs-stage .p488 { top: 488px; }
+.bs-stage .p784 { top: 784px; }
+.bs-stage .h288 { height: 288px; }
+
+/* 「今日运行情况」底条 [640,872,640,200] */
+.bs-stage .bs-panel--today {
+  left: 640px;
+  top: 872px;
+  width: 640px;
+  height: 200px;
+  z-index: 12;
+}
+.bs-stage .bs-panel--today .p-bd { padding: 10px; display: block; overflow: hidden; }
+
+/* 数据来源脚注（右下角 z30） */
+.bs-stage .bs-note {
+  position: absolute;
+  right: 40px;
+  bottom: var(--kp-space-2);
+  font-size: var(--kp-text-xs);
+  color: var(--kp-fg-subtle);
+  letter-spacing: 0.5px;
+  z-index: 30;
+}
+
+/* 楼栋悬浮卡 [280 宽 z70] */
+.bs-stage .bs-bldtip {
+  position: absolute;
+  z-index: 70;
+  width: 280px;
+  padding: 10px var(--kp-space-3);
+  background: rgba(var(--kp-bg-rgb), 0.96);
+  border: 1px solid var(--kp-accent);
+  border-radius: var(--kp-radius-panel);
+  box-shadow: var(--kp-elev-raised);
+}
+.bs-stage .bs-bldtip .n { font-size: var(--kp-text-md); color: var(--kp-fg); font-weight: 600; letter-spacing: 0.5px; }
+.bs-stage .bs-bldtip .r { display: flex; justify-content: space-between; font-size: var(--kp-text-sm); margin-top: 5px; }
+.bs-stage .bs-bldtip .r span:first-child { color: var(--kp-fg-subtle); }
+.bs-stage .bs-bldtip .r span:last-child { color: var(--kp-fg-body); font-variant-numeric: tabular-nums; }
+.bs-stage .bs-bldtip .hr { height: 1px; background: rgba(var(--kp-accent-rgb), 0.22); margin: var(--kp-space-2) 0 6px; }
+.bs-stage .bs-bldtip .cap { font-size: var(--kp-text-xs); color: var(--kp-fg-subtle); letter-spacing: 1px; }
+.bs-stage .bs-bldtip .dev { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px var(--kp-space-2); margin-top: 6px; }
+.bs-stage .bs-bldtip .dev div { font-size: var(--kp-text-xs); color: var(--kp-fg-muted); font-variant-numeric: tabular-nums; }
+.bs-stage .bs-bldtip .dev div b { color: var(--kp-fg-strong); font-size: var(--kp-text-sm); font-weight: 700; }
+.bs-stage .bs-bldtip .tot { margin-top: var(--kp-space-2); font-size: var(--kp-text-sm); color: var(--kp-accent); }
+.bs-stage .bs-bldtip .tot b { font-size: var(--kp-text-lg); color: var(--kp-fg-strong); font-weight: 700; }
+
+/* =====================================================================
+   7. 图2-7 通用子屏布局（参考页 .shead / .col / .scenter / .sbot / .t7wrap）
+   ===================================================================== */
+.bs-stage .shead {
+  position: absolute;
+  left: 40px;
+  top: 56px;
+  width: 1840px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.bs-stage .shead .st {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(var(--kp-accent-rgb), 0.4);
+}
+.bs-stage .shead .ss { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); letter-spacing: 2px; }
+.bs-stage .shead .sclock { margin-left: auto; display: flex; align-items: flex-end; gap: 14px; }
+.bs-stage .shead .sclock .d { font-size: var(--kp-text-sm); color: var(--kp-fg-muted); }
+.bs-stage .shead .sclock .t {
+  font-size: var(--kp-text-2xl);
+  font-weight: 700;
+  color: var(--kp-fg-strong);
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 图2-7 三段式列：左 40 / 右 1410，宽 470，行 110/370/630，高 250 */
+.bs-stage .col { position: absolute; width: 470px; }
+.bs-stage .col.col-l { left: 40px; }
+.bs-stage .col.col-r { left: 1410px; }
+.bs-stage .h250 { height: 250px; }
+.bs-stage .pl1 { top: 110px; }
+.bs-stage .pl2 { top: 370px; }
+.bs-stage .pl3 { top: 630px; }
+
+/* 中央主面板 [530,110,860,540] */
+.bs-stage .scenter { position: absolute; left: 530px; top: 110px; width: 860px; height: 540px; }
+/* 底部通栏 [40,900,1840,150] */
+.bs-stage .sbot { position: absolute; left: 40px; top: 900px; width: 1840px; height: 150px; }
+.bs-stage .sbot .p-bd { padding: 10px; }
+
+/* 图7 权威表容器 [40,120,1840,bottom:60] */
+.bs-stage .t7wrap { position: absolute; left: 40px; top: 120px; width: 1840px; bottom: 60px; overflow: auto; }
+
+/* =====================================================================
+   8. 数据模式徽章 / 无数据空态（参考页 .databadge / .nodatamask）
+   合规要求：禁止 mock 冒充实测 —— empty 模式全屏遮罩 + 所有数值置 "--"
+   ===================================================================== */
+.bs-stage .databadge {
+  margin-left: 14px;
+  height: 26px;
+  padding: 0 var(--kp-space-3);
+  border-radius: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: var(--kp-text-sm);
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  border: 1px solid;
+  user-select: none;
+}
+.bs-stage .databadge.m-demo {
+  color: var(--kp-warn);
+  border-color: var(--kp-warn);
+  background: rgba(var(--kp-warn-rgb), 0.14);
+}
+.bs-stage .databadge.m-empty {
+  color: var(--kp-fg-muted);
+  border-color: var(--kp-fg-subtle);
+  background: rgba(var(--kp-edge-rgb), 0.16);
+}
+.bs-stage .databadge.m-sim {
+  color: var(--kp-accent);
+  border-color: var(--kp-accent);
+  background: rgba(var(--kp-accent-rgb), 0.14);
+}
+.bs-stage .nodatamask {
+  position: absolute;
+  left: 0;
+  top: var(--kp-topnav-h);
+  width: 1920px;
+  height: calc(1080px - var(--kp-topnav-h));
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  background: rgba(var(--kp-bg-rgb), 0.74);
+  font-size: 34px;
+  color: var(--kp-fg-muted);
+  letter-spacing: 4px;
+}
+.bs-stage .nodatamask small {
+  display: block;
+  margin-top: var(--kp-space-4);
+  font-size: var(--kp-panel-title-size);
+  color: var(--kp-fg-subtle);
+  letter-spacing: 1px;
+}
+
+/* =====================================================================
+   9. 聚焦隐藏（GK-14）—— 保留改造前语义
+   ===================================================================== */
+.bs-stage [data-hud-id] { transition: opacity 0.45s ease; }
+.bs-stage .kp-scenario-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

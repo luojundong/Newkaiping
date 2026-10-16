@@ -1,0 +1,99 @@
+# ===== Dependencies =====
+node_modules/
+**/node_modules/
+
+# ===== Build output (regenerated from source) =====
+dist/
+backend/dist/
+frontend/dist/
+backend/public/web/
+
+# ===== Runtime data (server-generated; seed lives in code) =====
+data/
+backend/data/
+
+# ===== User uploads (not source, runtime) =====
+backend/public/uploads/
+
+# ===== Env secrets =====
+.env
+**/.env
+!.env.example
+
+# ===== Logs =====
+*.log
+**/*.log
+.nest.log
+backend.log.txt
+server.log
+start-prod.log
+backend-start.out
+
+# ===== Browser / tool caches (junk) =====
+.edge-gk06/
+.edge-gk08/
+.playwright-cli/
+
+# ===== Agent working dir (not project source) =====
+.workbuddy/
+
+# ===== Trash / temp =====
+_trash_web*/
+.trash_*/
+.tmp-*.json
+.tmp-*.txt
+
+# ===== Root-level stray artifacts (not project source) =====
+/*.png
+/*.jpg
+/*.jpeg
+/*.zip
+/*.docx
+/OVERVIEW_*.md
+/overview*.md
+/qa_*.txt
+/qa_*.cjs
+/qa.cjs
+/ov-*.png
+/ov-*.txt
+/ov-snap.yaml
+/diag*.cjs
+/diag/
+/evidence/
+/logs/
+/e2e/
+/legacy-*.json
+/login.json
+/schema.json
+/nul
+/doc_*.json
+/doc_*.md
+/说明.txt
+/开平医院各楼栋布局图*
+/模型文件/
+
+# ===== deploy screenshots (keep scripts only) =====
+deploy/*.png
+deploy/*.log
+
+# ===== OS / editor =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ===== Misc build/backup dirs =====
+.nbdist/
+.nbdist2/
+.nbo/
+.nc/
+.nd/
+dist-new/
+dist_check/
+exports/
+*.out
+backend/backend.log.txt
+deploy/glb-showcase/
+deploy/*.gz
+frontend/_check_overview.js
+_trash_web_1787715426088/

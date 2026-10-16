@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>开平市中心医院能源管理平台操作指南</title>
+<style>
+  :root {
+    --color-primary: #01579B;
+    --color-text: #222222;
+    --color-muted: #666666;
+  }
+  body { font-family: "Microsoft YaHei", "SimSun", sans-serif; color: #222222; font-size: 11pt; line-height: 1.7; }
+  h1 { font-family: "SimHei", "Microsoft YaHei", sans-serif; font-size: 20pt; color: #01579B; margin-top: 24pt; margin-bottom: 12pt; }
+  h2 { font-family: "SimHei", "Microsoft YaHei", sans-serif; font-size: 15pt; color: #0D47A1; margin-top: 18pt; margin-bottom: 8pt; }
+  h3 { font-family: "SimHei", "Microsoft YaHei", sans-serif; font-size: 12.5pt; color: #1565C0; margin-top: 14pt; margin-bottom: 6pt; }
+  p { margin: 6pt 0; }
+  table { font-size: 10.5pt; }
+  th { color: #FFFFFF; background-color: #0D47A1; }
+  .doc-meta { color: #666666; font-size: 10pt; }
+  .figure-caption { text-align: center; color: #555555; font-size: 9.5pt; margin-top: 4pt; }
+  .cover-title { font-family: "SimHei", sans-serif; font-size: 30pt; color: #0D47A1; text-align: center; }
+  .cover-sub { font-size: 16pt; color: #333333; text-align: center; }
+  @page {
+    @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; }
+    @top-right { content: string(chapter); }
+  }
+  @page cover { @bottom-center { content: none; } @top-right { content: none; } }
+  section[role="cover"] { page: cover; }
+  h1 { string-set: chapter content(text); }
+</style>
+</head>
+<body>
+
+<!-- ================= 封面 ================= -->
+<section role="cover">
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+  <p class="cover-title">开平市中心医院能源管理平台</p>
+  <p class="cover-sub">操 作 指 南 · 使 用 说 明</p>
+  <p>&nbsp;</p>
+  <p style="text-align:center;">覆盖全院 10 栋楼 · 七大子系统 · 数字孪生大屏 + 运维管理后台</p>
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+  <p class="doc-meta" style="text-align:center;">文档版本：V1.0&nbsp;&nbsp;|&nbsp;&nbsp;编制日期：2026 年 10 月&nbsp;&nbsp;|&nbsp;&nbsp;适用对象：平台管理员、运维值班人员</p>
+  <p>&nbsp;</p>
+  <div data-component="callout" data-variant="info">
+    <div class="callout-content">
+      <p><b>阅读指引：</b>本指南图文并茂，全部截图取自线上实际运行界面。第 1–3 章面向所有使用者（大屏观看与基本操作），第 4–9 章面向管理员（后台配置与日常运维），第 10 章为常见问题速查。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 目录 ================= -->
+<section role="body" data-page-restart="1">
+<nav class="doc-toc">
+  <h1 style="string-set:none;">目录</h1>
+  <ol>
+    <li><a href="#ch1">第 1 章 系统概述</a>
+      <ol>
+        <li><a href="#s11">1.1 平台简介</a></li>
+        <li><a href="#s12">1.2 系统组成</a></li>
+        <li><a href="#s13">1.3 访问地址与运行环境</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch2">第 2 章 登录与访问</a>
+      <ol>
+        <li><a href="#s21">2.1 打开系统</a></li>
+        <li><a href="#s22">2.2 账号与自动登录说明</a></li>
+        <li><a href="#s23">2.3 进入管理后台</a></li>
+        <li><a href="#s24">2.4 退出登录</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch3">第 3 章 综合态势大屏操作</a>
+      <ol>
+        <li><a href="#s31">3.1 大屏界面总览</a></li>
+        <li><a href="#s32">3.2 顶部七屏切换</a></li>
+        <li><a href="#s33">3.3 楼栋导航与楼层列表</a></li>
+        <li><a href="#s34">3.4 七大子系统数据卡片</a></li>
+        <li><a href="#s35">3.5 三维场景交互</a></li>
+        <li><a href="#s36">3.6 楼层钻取：查看楼层设备</a></li>
+        <li><a href="#s37">3.7 数据模式徽章</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch4">第 4 章 管理后台入门</a>
+      <ol>
+        <li><a href="#s41">4.1 后台界面布局</a></li>
+        <li><a href="#s42">4.2 功能菜单总览</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch5">第 5 章 楼栋与三维场景配置</a>
+      <ol>
+        <li><a href="#s51">5.1 楼栋管理</a></li>
+        <li><a href="#s52">5.2 楼栋子系统配置</a></li>
+        <li><a href="#s53">5.3 楼栋楼层标签</a></li>
+        <li><a href="#s54">5.4 楼栋显示 DIY</a></li>
+        <li><a href="#s55">5.5 场景模型上传与标记管理</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch6">第 6 章 设备与告警管理</a>
+      <ol>
+        <li><a href="#s61">6.1 设备管理</a></li>
+        <li><a href="#s62">6.2 告警管理</a></li>
+        <li><a href="#s63">6.3 设备控制</a></li>
+        <li><a href="#s64">6.4 历史数据</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch7">第 7 章 能耗与计费</a>
+      <ol>
+        <li><a href="#s71">7.1 能耗报表</a></li>
+        <li><a href="#s72">7.2 计费管理</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch8">第 8 章 大屏样式与布局 DIY</a>
+      <ol>
+        <li><a href="#s81">8.1 大屏样式配置</a></li>
+        <li><a href="#s82">8.2 大屏布局 DIY</a></li>
+        <li><a href="#s83">8.3 大屏面板系统</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch9">第 9 章 系统管理与审计合规</a>
+      <ol>
+        <li><a href="#s91">9.1 用户管理</a></li>
+        <li><a href="#s92">9.2 角色管理</a></li>
+        <li><a href="#s93">9.3 操作日志</a></li>
+        <li><a href="#s94">9.4 审查追踪（审计合规）</a></li>
+        <li><a href="#s95">9.5 其他系统页面</a></li>
+      </ol>
+    </li>
+    <li><a href="#ch10">第 10 章 常见问题（FAQ）</a></li>
+  </ol>
+</nav>
+</section>
+
+<section role="body">
+<!-- ================= 第 1 章 ================= -->
+<h1 id="ch1">第 1 章 系统概述</h1>
+
+<h2 id="s11">1.1 平台简介</h2>
+<p>开平市中心医院能源管理平台是一套覆盖全院 <b>10 栋楼宇</b>的能源与设备数字化管控系统。平台以「数字孪生大屏 + 运维管理后台」双端形态运行：大屏面向展示与监视，后台面向配置与管理。</p>
+<p>全院 10 栋楼分别为：1 号楼（120 急救中心）、2 号楼（门诊大楼）、3 号楼（住院大楼）、4 号楼（妇产儿科大楼）、5 号楼（张襯大楼）、6 号楼（后勤楼）、7 号楼（药剂楼）、8 号楼（余锦炯大楼·放疗楼）、9 号楼（综合大楼）、10 号楼（宿舍楼）。每栋楼均配备以下七大子系统：</p>
+<table>
+  <tr><th>编号</th><th>子系统名称</th><th>英文标识</th></tr>
+  <tr><td>S1</td><td>智慧能源一体化调控平台</td><td>regulation</td></tr>
+  <tr><td>S2</td><td>设备生命周期管理系统</td><td>lifecycle</td></tr>
+  <tr><td>S3</td><td>空调集中控制调度系统</td><td>hvac</td></tr>
+  <tr><td>S4</td><td>智慧照明管理系统</td><td>lighting</td></tr>
+  <tr><td>S5</td><td>医院电力监控系统</td><td>power</td></tr>
+  <tr><td>S6</td><td>热水集中控制调度系统</td><td>hotwater</td></tr>
+  <tr><td>S7</td><td>电梯节能管理系统</td><td>elevator</td></tr>
+</table>
+
+<h2 id="s12">1.2 系统组成</h2>
+<p>平台由两大部分组成，共用同一访问地址与同一套账号体系：</p>
+<table>
+  <tr><th>端</th><th>入口</th><th>主要用途</th></tr>
+  <tr><td>综合态势大屏</td><td>/bigscreen/overview（打开首页即达）</td><td>三维院区展示、楼栋/楼层浏览、七屏数据驾驶舱、告警与能耗总览</td></tr>
+  <tr><td>运维管理后台</td><td>/admin</td><td>楼栋/楼层/设备/告警/能耗等数据管理，大屏样式与布局 DIY，用户权限与审计</td></tr>
+</table>
+<p>后台对数据的任何修改（如楼栋层数、设备台账、大屏布局）保存后，大屏端即时联动生效。</p>
+
+<h2 id="s13">1.3 访问地址与运行环境</h2>
+<div data-component="data-card" data-title="访问信息速查" data-type="kv" data-color="info">
+  <dl class="card-kv-list">
+    <dt>访问地址</dt><dd>http://117.21.178.39:5168（院内部署，浏览器直接打开）</dd>
+    <dt>大屏入口</dt><dd>http://117.21.178.39:5168/（默认跳转综合态势大屏）</dd>
+    <dt>后台入口</dt><dd>http://117.21.178.39:5168/admin</dd>
+    <dt>演示账号</dt><dd>admin / admin123（应用启动自动登录）</dd>
+    <dt>推荐浏览器</dt><dd>Chrome / Edge（建议 1920×1080 及以上分辨率观看大屏）</dd>
+  </dl>
+</div>
+<div data-component="callout" data-variant="warning">
+  <div class="callout-content">
+    <p><b>提示：</b>大屏按 1920×1080 设计并等比缩放，投影或电视墙请将浏览器设为全屏（F11）以获得最佳效果。</p>
+  </div>
+</div>
+
+<!-- ================= 第 2 章 ================= -->
+<h1 id="ch2">第 2 章 登录与访问</h1>
+
+<h2 id="s21">2.1 打开系统</h2>
+<p>步骤：</p>
+<ol>
+  <li>在电脑浏览器地址栏输入 <b>http://117.21.178.39:5168</b>；</li>
+  <li>页面打开后默认进入「综合态势大屏」（综合概览驾驶舱），如图 2-1 所示。</li>
+</ol>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/01-bigscreen-overview.png" alt="综合态势大屏首页" style="width:16cm;"></p>
+<p class="figure-caption">图 2-1　综合态势大屏首页（全院总览 + 三维院区）</p>
+
+<h2 id="s22">2.2 账号与自动登录说明</h2>
+<p>本系统当前交付版本<b>无独立登录页</b>：应用启动时会以前端演示账号（admin / admin123）自动换取登录令牌（JWT），因此打开页面即处于已登录状态，可直接访问大屏与管理后台的所有页面。</p>
+<p>账号与权限说明：</p>
+<table>
+  <tr><th>角色</th><th>权限范围</th><th>典型用途</th></tr>
+  <tr><td>admin（管理员）</td><td>全部功能，含用户/角色管理、Schema 编辑器、审计配置</td><td>系统管理员日常维护</td></tr>
+  <tr><td>运维/值班等业务角色</td><td>按角色配置的功能权限（如设备、告警、能耗页面）</td><td>日常运维值班</td></tr>
+  <tr><td>只读查看角色</td><td>仅查看，无修改与导出权限</td><td>参观展示、审计查阅</td></tr>
+</table>
+<div data-component="callout" data-variant="info">
+  <div class="callout-content">
+    <p><b>说明：</b>若页面出现「接口请求失败」或菜单空白，多为后端服务未启动或网络不通，请确认服务器 5168 端口可达后刷新页面。</p>
+  </div>
+</div>
+
+<h2 id="s23">2.3 进入管理后台</h2>
+<p>两种方式任选其一：</p>
+<ol>
+  <li>在浏览器地址栏直接输入 <b>http://117.21.178.39:5168/admin</b>；</li>
+  <li>在大屏页左上角点击系统名称/返回入口切换至后台（后台页左下角有「返回态势大屏」按钮可切换回大屏）。</li>
+</ol>
+<p>后台默认打开「楼栋子系统配置」页。顶部显示当前登录账号（admin）与「退出」按钮，左侧为功能菜单栏。</p>
+
+<h2 id="s24">2.4 退出登录</h2>
+<p>在后台任意页面右上角点击「退出」按钮即可退出当前账号。退出后刷新页面会重新触发自动登录；如需更换账号，请先在「用户管理」中配置新账号并调整角色权限，或联系系统管理员。</p>
+
+<!-- ================= 第 3 章 ================= -->
+<h1 id="ch3">第 3 章 综合态势大屏操作</h1>
+
+<h2 id="s31">3.1 大屏界面总览</h2>
+<p>综合态势大屏（图 3-1）自上而下分为四个区域：</p>
+<ol>
+  <li><b>顶部系统栏</b>：左侧为医院名称与主题；中间为 7 个屏幕切换标签（图1–图7）；右侧为数据模式徽章与日期时间、天气。</li>
+  <li><b>楼栋导航条</b>：10 个楼栋按钮横向排列，每个按钮显示「楼栋名 + 楼层数（如 12F）」，点击即选中该楼栋。</li>
+  <li><b>中央三维区</b>：院区三维模型与地坪，支持鼠标拖转、缩放、点选楼栋；选中楼栋后左侧出现该楼<b>楼层列表</b>。</li>
+  <li><b>左右数据面板</b>：S1–S7 七大子系统实时数据卡片，底部为「今日运行情况」汇总（设备总数、离线数、今日能耗、今日告警、工单处理）。</li>
+</ol>
+
+<h2 id="s32">3.2 顶部七屏切换</h2>
+<p>点击顶部标签可在 7 个驾驶舱屏之间切换，各屏内容如下：</p>
+<table>
+  <tr><th>屏号</th><th>名称</th><th>主要内容</th></tr>
+  <tr><td>图1</td><td>主驾驶舱</td><td>全院总览：S1–S7 子系统卡片、楼栋导航、今日运行情况、三维院区</td></tr>
+  <tr><td>图2</td><td>空调与能源</td><td>冷机—冷却塔—水泵—末端链路、分区温度、能效分析、能耗占比与排名</td></tr>
+  <tr><td>图3</td><td>电梯安全</td><td>电梯编号表、运行统计、故障告警、实时位置（井道行程）、维保计划</td></tr>
+  <tr><td>图4</td><td>供配电计量</td><td>配电总览（10kV 进线与变压器）、变压器负载、馈线状态、电能质量</td></tr>
+  <tr><td>图5</td><td>告警工单</td><td>近 7 日告警趋势、告警中心、实时告警流、工单统计与处理</td></tr>
+  <tr><td>图6</td><td>空间设备运维</td><td>空间维度设备分布、设备全生命周期状态、维保与巡检</td></tr>
+  <tr><td>图7</td><td>建筑面积表</td><td>10 栋楼权威建筑面积、层数与用途一览表</td></tr>
+</table>
+<div data-component="callout" data-variant="info">
+  <div class="callout-content">
+    <p><b>提示：</b>在图1 主驾驶舱中点击 S1–S7 卡片可下钻至对应子系统屏（联动切屏），与顶部标签等效。</p>
+  </div>
+</div>
+
+<h2 id="s33">3.3 楼栋导航与楼层列表</h2>
+<p>楼栋与楼层是大屏的核心操作主线：</p>
+<ol>
+  <li><b>选楼</b>：点击顶部楼栋导航条中的任一楼栋（如「4 号楼」），该楼栋高亮，三维镜头自动飞行至该楼栋，右侧面板切换为该楼栋的子系统数据（如 S7 电梯节能运行·4 号楼）。</li>
+  <li><b>看楼层</b>：选中楼栋后，画面左侧出现<b>楼层列表面板</b>，自下而上排列该楼全部楼层按钮（F1、F2 … FN），面板头部显示楼栋名称与总层数，如图 3-2。</li>
+  <li><b>选层</b>：点击任一楼层按钮（如 F5），进入该楼层钻取视图（见 3.6）。</li>
+  <li><b>取消选中</b>：再次点击已选中的楼栋按钮，返回全院区全景，楼层列表收起。</li>
+</ol>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/02-bigscreen-building-floors.png" alt="楼栋导航与楼层列表" style="width:16cm;"></p>
+<p class="figure-caption">图 3-2　选中 4 号楼后：顶部楼栋高亮，左侧出现楼层列表（F1–FN）</p>
+<div data-component="callout" data-variant="warning">
+  <div class="callout-content">
+    <p><b>注意：</b>楼栋按钮上的楼层数（如 12F）与楼层列表的层数均来自后台「楼栋管理」中配置的层数。若某楼栋显示 0F 或楼层列表为空，请到后台「楼栋管理」补录该楼层数（见 5.1 与第 10 章 FAQ-Q1）。</p>
+  </div>
+</div>
+
+<h2 id="s34">3.4 七大子系统数据卡片</h2>
+<p>图1 主驾驶舱左右两列即为 S1–S7 实时数据卡片：每张卡片显示子系统名称、核心指标（如设备总数、在线率、告警数、累计能耗）与迷你趋势图。卡片右上角为下钻入口，点击进入对应子系统驾驶舱屏。选中楼栋后，卡片数据自动切换为「该楼栋 × 该子系统」口径。</p>
+
+<h2 id="s35">3.5 三维场景交互</h2>
+<table>
+  <tr><th>操作</th><th>鼠标/手势</th><th>效果</th></tr>
+  <tr><td>旋转视角</td><td>按住左键拖动</td><td>环绕院区旋转观察</td></tr>
+  <tr><td>缩放</td><td>滚轮前后滚动</td><td>推近 / 拉远镜头</td></tr>
+  <tr><td>平移</td><td>按住右键拖动</td><td>平移画面</td></tr>
+  <tr><td>选楼</td><td>单击楼栋（或楼栋导航按钮）</td><td>选中楼栋、飞至该楼、展开楼层列表</td></tr>
+  <tr><td>回全景</td><td>再次点击已选楼栋</td><td>取消选中、回到院区全景</td></tr>
+</table>
+<div data-component="callout" data-variant="info">
+  <div class="callout-content">
+    <p><b>说明：</b>首次打开大屏时三维模型需要加载，中央出现「模型加载中」提示属正常现象；模型较大时请耐心等待或检查网络带宽。</p>
+  </div>
+</div>
+
+<h2 id="s36">3.6 楼层钻取：查看楼层设备</h2>
+<ol>
+  <li>选中楼栋后点击楼层列表中的目标楼层（如 F5）；</li>
+  <li>系统弹出「楼层详情」抽屉，列出该楼该层的设备清单（名称、类型、状态等）；</li>
+  <li>点击设备行可查看设备详情并执行后续操作；</li>
+  <li>点击抽屉关闭按钮返回大屏。</li>
+</ol>
+
+<h2 id="s37">3.7 数据模式徽章</h2>
+<p>大屏右上角的徽章显示当前数据来源模式，点击可在三种模式间切换：</p>
+<table>
+  <tr><th>模式</th><th>含义</th><th>典型场景</th></tr>
+  <tr><td>演示态（DEMO DATA）</td><td>使用内置模拟数据</td><td>演示、汇报、开发验证</td></tr>
+  <tr><td>联机态</td><td>连接真实数据接口</td><td>正式接入现场数据后使用</td></tr>
+  <tr><td>未接入（empty）</td><td>全屏遮罩、数值以「--」占位</td><td>未接数据的干净展示底版</td></tr>
+</table>
+
+<!-- ================= 第 4 章 ================= -->
+<h1 id="ch4">第 4 章 管理后台入门</h1>
+
+<h2 id="s41">4.1 后台界面布局</h2>
+<p>管理后台（图 4-1）为经典三区布局：</p>
+<ol>
+  <li><b>左侧菜单栏</b>：全部功能入口，按「配置 → 数据 → 系统」分组排列，当前页高亮；</li>
+  <li><b>顶部栏</b>：当前页面标题、右上角登录账号（admin）与「退出」按钮；</li>
+  <li><b>内容区</b>：各功能页主体，通常为「工具栏（查询/新增/导出）+ 数据表格/表单」结构；</li>
+  <li><b>左下角</b>：「返回态势大屏」按钮，一键切换回大屏。</li>
+</ol>
+
+<h2 id="s42">4.2 功能菜单总览</h2>
+<table>
+  <tr><th>分组</th><th>菜单项</th><th>用途</th></tr>
+  <tr><td rowspan="5">基础配置</td><td>楼栋子系统配置</td><td>按楼栋启停并重命名 7 大子系统</td></tr>
+  <tr><td>楼栋管理</td><td>楼栋台账：编码、名称、层数、建筑面积、楼层配置</td></tr>
+  <tr><td>楼栋楼层标签</td><td>自定义每栋楼层标签并绑定数据字段</td></tr>
+  <tr><td>楼栋显示 DIY</td><td>楼栋三维显示效果配置</td></tr>
+  <tr><td>场景模型上传 / 标记管理</td><td>上传替换 3D 模型、管理场景标记</td></tr>
+  <tr><td rowspan="5">业务数据</td><td>设备管理</td><td>设备台账增删改查、按楼栋/子系统筛选</td></tr>
+  <tr><td>告警管理</td><td>告警规则、异常配置、告警处理</td></tr>
+  <tr><td>能耗报表</td><td>能耗查询、报表导出</td></tr>
+  <tr><td>历史数据 / 计费管理</td><td>历史数据查询、计费方案</td></tr>
+  <tr><td>设备控制</td><td>远程设备控制与指令下发</td></tr>
+  <tr><td rowspan="3">大屏 DIY</td><td>大屏样式配置</td><td>主题色、透明度、圆角、字号等视觉令牌</td></tr>
+  <tr><td>大屏布局 DIY</td><td>17 个数据槽拖拽布局、8 种框型</td></tr>
+  <tr><td>大屏面板系统 / Schema 编辑器</td><td>面板与场景 Schema 高级配置</td></tr>
+  <tr><td rowspan="4">系统与审计</td><td>用户管理 / 角色管理</td><td>账号与角色权限（需 user:manage 权限）</td></tr>
+  <tr><td>操作日志</td><td>后台操作记录查询</td></tr>
+  <tr><td>审查追踪</td><td>GMP 合规审计：哈希链防篡改、导出、周期复核</td></tr>
+  <tr><td>监控运维 / 站点配置 / 地图底图配置</td><td>系统监控与站点级参数</td></tr>
+</table>
+
+<!-- ================= 第 5 章 ================= -->
+<h1 id="ch5">第 5 章 楼栋与三维场景配置</h1>
+
+<h2 id="s51">5.1 楼栋管理</h2>
+<p>「楼栋管理」（图 5-1）是全院楼栋台账的权威数据源，大屏楼栋导航、楼层列表、建筑面积表（图7）均取自本页数据。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/04-admin-building.png" alt="楼栋管理" style="width:16cm;"></p>
+<p class="figure-caption">图 5-1　楼栋管理：楼栋列表（层数、建筑面积、状态、操作）</p>
+<p><b>查看楼栋列表：</b>页签「楼栋列表」以表格展示序号、楼栋编码、楼栋名称、层数、建筑面积（m²）、启用状态，每行提供「编辑 / 删除」操作。</p>
+<p><b>新增楼栋：</b>点击右上角「+ 新增楼栋」，填写楼栋编码（如 B11）、名称、层数、建筑面积，保存后立即生效。</p>
+<p><b>编辑楼栋：</b>点击目标行「编辑」，可修改名称、层数、面积等字段。修改<b>层数</b>并保存后，大屏顶部楼栋导航的「NF」角标与该楼楼层列表将同步更新。</p>
+<p><b>楼层配置：</b>切换到「楼层配置」页签，可为每栋楼维护楼层明细（楼层序号、标签等），供楼层标签与大屏楼层钻取使用。</p>
+<p><b>删除楼栋：</b>点击「删除」并二次确认。删除会影响大屏楼栋导航，请谨慎操作。</p>
+
+<h2 id="s52">5.2 楼栋子系统配置</h2>
+<p>「楼栋子系统配置」（图 5-2）控制每栋楼启用哪些子系统、以及子系统在大屏上的显示名称。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/03-admin-building-subsystem.png" alt="楼栋子系统配置" style="width:16cm;"></p>
+<p class="figure-caption">图 5-2　楼栋子系统配置：左侧选楼栋，右侧启停七大子系统</p>
+<p>操作步骤：</p>
+<ol>
+  <li>在左侧「楼栋选择」列表点击目标楼栋；</li>
+  <li>顶部下拉框确认当前楼栋（如「120 急救中心 (6F / 12000m²)」）；</li>
+  <li>如需重命名楼栋，在「楼栋名称」输入框修改后点击「保存」；</li>
+  <li>在子系统列表中，通过每行的开关「启用 / 停用」该子系统；在名称输入框中可自定义子系统显示名（大屏顶部 tab 与卡片标题将跟随），点击该行「改名」保存；</li>
+  <li>完成后点击底部「保存配置」。页面底部显示「已启用 N / 7 个子系统」；「重置」按钮可放弃当前改动。</li>
+</ol>
+<div data-component="callout" data-variant="warning">
+  <div class="callout-content">
+    <p><b>注意：</b>停用某子系统后，大屏顶部对应 tab 与该楼栋的子系统卡片将隐藏。请确认业务上确不需要后再停用。</p>
+  </div>
+</div>
+
+<h2 id="s53">5.3 楼栋楼层标签</h2>
+<p>「楼栋楼层标签」（图 5-3）用于为每栋楼每一层自定义标签（如「F3 - 内科病区」）并绑定数据字段，大屏与三维视图即时联动。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/05-admin-floor-label.png" alt="楼栋楼层标签" style="width:16cm;"></p>
+<p class="figure-caption">图 5-3　楼栋楼层标签：楼层树 → 楼栋缩略图 → 标签编辑</p>
+<p>操作步骤：</p>
+<ol>
+  <li>在左侧「楼层树」中按楼栋逐层展开，点击目标楼层节点；</li>
+  <li>中间「楼栋缩略图」联动显示该楼栋示意；</li>
+  <li>在右侧「标签编辑」区填写该层标签名称、绑定数据字段；</li>
+  <li>点击右上角「保存」，大屏 3D 楼层标签即时更新；「刷新」可重新加载最新数据。</li>
+</ol>
+
+<h2 id="s54">5.4 楼栋显示 DIY</h2>
+<p>「楼栋显示 DIY」用于调整楼栋在三维场景中的显示效果（如楼栋位置锚点、显示开关）。管理员可在后台预览并拖动楼栋锚点，保存后大屏三维场景按新位置渲染。</p>
+
+<h2 id="s55">5.5 场景模型上传与标记管理</h2>
+<p><b>场景模型上传：</b>支持上传新的 GLB/GLTF 模型替换当前院区三维模型，上传成功后大屏重新加载即生效。</p>
+<p><b>标记管理：</b>维护三维场景中的标记点（如重点设备位置标记），可设置标记的位置、类型与关联对象，在大屏 3D 场景中随视角展示。</p>
+
+<!-- ================= 第 6 章 ================= -->
+<h1 id="ch6">第 6 章 设备与告警管理</h1>
+
+<h2 id="s61">6.1 设备管理</h2>
+<p>「设备管理」（图 6-1）维护全院设备台账，支持按楼栋、子系统、设备类型筛选。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/06-admin-device.png" alt="设备管理" style="width:16cm;"></p>
+<p class="figure-caption">图 6-1　设备管理：设备台账列表与筛选</p>
+<p>常用操作：</p>
+<ol>
+  <li><b>查询</b>：顶部筛选条件（楼栋 / 子系统 / 关键字）组合查询，或直接搜索设备名称/编号；</li>
+  <li><b>新增设备</b>：点击「新增」，填写设备名称、类型、所属楼栋与楼层、关联子系统等，保存后设备同步出现在大屏对应楼层钻取清单中；</li>
+  <li><b>编辑 / 删除</b>：对既有设备修改参数或下线删除；</li>
+  <li><b>查看详情</b>：点击设备行进入详情，可查看实时状态与历史曲线。</li>
+</ol>
+
+<h2 id="s62">6.2 告警管理</h2>
+<p>「告警管理」（图 6-2）集中处理全院告警：近 7 日告警趋势、告警中心列表、实时告警与工单联动。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/07-admin-alarm.png" alt="告警管理" style="width:16cm;"></p>
+<p class="figure-caption">图 6-2　告警管理：告警趋势、告警中心与处理</p>
+<p>常用操作：</p>
+<ol>
+  <li>按级别（紧急/重要/一般）与状态（未处理/已处理）筛选告警；</li>
+  <li>点击告警行查看详情（对象、时间、原因、前后值）；</li>
+  <li>执行「确认 / 处理 / 关闭」并填写处理意见；重要告警可一键生成工单进入处理流程；</li>
+  <li>在「异常配置」中维护告警阈值与规则，保存后新告警按新规则触发。</li>
+</ol>
+
+<h2 id="s63">6.3 设备控制</h2>
+<p>「设备控制」页用于对可控设备（空调机组、水泵、照明回路等）下发远程指令：选择目标设备 → 选择控制动作（启停、设定值）→ 确认执行。所有控制指令均写入操作日志与审查追踪，可在第 9 章对应页面追溯。</p>
+<div data-component="callout" data-variant="danger">
+  <div class="callout-content">
+    <p><b>警告：</b>远程控制直接作用于现场设备。执行启停/设定类操作前，请再次核对设备编号与目标值，避免误操作。</p>
+  </div>
+</div>
+
+<h2 id="s64">6.4 历史数据</h2>
+<p>「历史数据」页支持按点位、时间范围查询历史采样数据，并可导出。查询结果以表格 + 趋势曲线呈现，用于能耗分析与故障回溯。</p>
+
+<!-- ================= 第 7 章 ================= -->
+<h1 id="ch7">第 7 章 能耗与计费</h1>
+
+<h2 id="s71">7.1 能耗报表</h2>
+<p>「能耗报表」（图 7-1）提供全院/分楼栋/分子系统的能耗统计与报表导出。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/08-admin-energy.png" alt="能耗报表" style="width:16cm;"></p>
+<p class="figure-caption">图 7-1　能耗报表：能耗统计与报表导出</p>
+<p>操作要点：</p>
+<ol>
+  <li>选择统计维度（全院 / 楼栋 / 子系统）与时间范围（日 / 周 / 月 / 自定义）；</li>
+  <li>查看能耗汇总与趋势图、分项占比；</li>
+  <li>点击「导出」生成报表文件（CSV/Excel），用于上报与存档。</li>
+</ol>
+
+<h2 id="s72">7.2 计费管理</h2>
+<p>「计费管理」维护各楼栋/科室的计费方案（电价、分摊规则、结算周期），并支持账单查询，为院内能耗分摊与成本核算提供依据。</p>
+
+<!-- ================= 第 8 章 ================= -->
+<h1 id="ch8">第 8 章 大屏样式与布局 DIY</h1>
+
+<h2 id="s81">8.1 大屏样式配置</h2>
+<p>「大屏样式配置」（图 8-1）以可视化方式调整大屏视觉令牌：主题强调色、面板透明度、圆角、标题字号、边框色等。所有修改实时预览，保存后大屏端全屏生效；亦提供「恢复默认」一键还原。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/09-admin-bigscreen-style.png" alt="大屏样式配置" style="width:16cm;"></p>
+<p class="figure-caption">图 8-1　大屏样式配置：主题与视觉令牌实时预览</p>
+
+<h2 id="s82">8.2 大屏布局 DIY</h2>
+<p>「大屏布局 DIY」（图 8-2）用于编排大屏上的 17 个数据框（数据槽）：</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/10-admin-bigscreen-layout.png" alt="大屏布局 DIY" style="width:16cm;"></p>
+<p class="figure-caption">图 8-2　大屏布局 DIY：1920×1080 画布所见即所得编辑</p>
+<ol>
+  <li>顶部选择要编辑的系统（默认「开平市中心医院能源管理平台」总览，或进入某一子系统单独布局）；</li>
+  <li>在画布中直接<b>拖拽</b>数据框调整位置，每个数据框对应大屏一个数据槽；</li>
+  <li>右侧「框样式（8 种）」为选中数据框选择边框形态；「17 个数据槽」列表可查看/切换各槽位绑定的数据项；</li>
+  <li>点击「保存」后大屏按新布局渲染；「恢复默认」还原出厂布局。</li>
+</ol>
+<div data-component="callout" data-variant="info">
+  <div class="callout-content">
+    <p><b>提示：</b>布局画布与真实大屏同为 1920×1080 等比缩放，画布中看到的位置即大屏最终效果，所见即所得。</p>
+  </div>
+</div>
+
+<h2 id="s83">8.3 大屏面板系统</h2>
+<p>「大屏面板系统」提供面板级的高级配置（面板类型、数据源绑定等），供需要深度定制面板形态的管理员使用；普通布局调整优先使用 8.2 的布局 DIY。</p>
+
+<!-- ================= 第 9 章 ================= -->
+<h1 id="ch9">第 9 章 系统管理与审计合规</h1>
+
+<h2 id="s91">9.1 用户管理</h2>
+<p>「用户管理」（图 9-1，需 user:manage 权限）维护平台账号：新增用户、设置初始密码、分配角色、启用/停用账号。保存后新账号即可按其角色权限登录使用。</p>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/11-admin-user.png" alt="用户管理" style="width:16cm;"></p>
+<p class="figure-caption">图 9-1　用户管理：账号列表与角色分配</p>
+
+<h2 id="s92">9.2 角色管理</h2>
+<p>「角色管理」按角色勾选功能权限（如 audit:trail 审查追踪查看、user:manage 用户管理、scene:schema 场景配置等），角色权限变更对账号即时生效。建议遵循最小权限原则分配。</p>
+
+<h2 id="s93">9.3 操作日志</h2>
+<p>「操作日志」记录后台所有写操作（新增/修改/删除/控制指令），支持按操作人、模块、时间范围检索，用于日常运维追溯。</p>
+
+<h2 id="s94">9.4 审查追踪（审计合规）</h2>
+<p>「审查追踪」（图 9-2）是面向 GMP/审计合规的防篡改审计模块，核心特性：</p>
+<ul>
+  <li><b>哈希链防篡改</b>：审计记录逐条计算哈希并链接前条（prev_hash/hash），任何篡改都会破坏链条且可被校验发现；页面顶部显示「审计合规 · 历史记录条数」与每条记录的「已签名」完整性状态；</li>
+  <li><b>NTP 时间同步</b>：顶部显示「时间源 NTP 已同步」，保证审计时间戳可信；</li>
+  <li><b>周期复核</b>：显示上次复核时间与复核间隔（默认 30 天，可配置）；</li>
+  <li><b>记录只增不改</b>：审计记录为 append-only，任何账号（含管理员）均不能修改或删除历史记录；</li>
+  <li><b>导出</b>：支持「导出 CSV（本页）」「服务端导出 CSV」「服务端导出 JSON」与打印；导出文件包含完整哈希链字段，导出动作本身也会作为一条审计记录入链。</li>
+</ul>
+<p style="text-align:center;"><img src="D:/wwwroot/NewKaiPing/docs/guide/images/12-admin-audit-trail.png" alt="审查追踪" style="width:16cm;"></p>
+<p class="figure-caption">图 9-2　审查追踪：筛选条件、哈希链完整性标识与多格式导出</p>
+<p>查询与导出步骤：</p>
+<ol>
+  <li>设置筛选条件：操作人（账号模糊）、模块、操作类型、关键字（对象/详情/原因）、起止时间；</li>
+  <li>点击「查询」刷新列表（支持分页浏览全部记录）；</li>
+  <li>点击需要的导出按钮获取文件；「导出 CSV（本页）」仅导出当前页，服务端导出导出符合条件的全量记录；</li>
+  <li>复核人员按周期点击「执行复核」核对链条完整性，复核记录同样入链。</li>
+</ol>
+
+<h2 id="s95">9.5 其他系统页面</h2>
+<table>
+  <tr><th>页面</th><th>用途</th></tr>
+  <tr><td>监控运维</td><td>服务运行状态、接口健康、数据链路监控</td></tr>
+  <tr><td>站点配置</td><td>站点名称、Logo、显示参数等站点级配置</td></tr>
+  <tr><td>地图底图配置</td><td>地图底图样式与代理配置（密钥由后端托管，前端不暴露）</td></tr>
+  <tr><td>子系统菜单</td><td>大屏顶部子系统菜单的顺序与显隐配置</td></tr>
+</table>
+
+<!-- ================= 第 10 章 ================= -->
+<h1 id="ch10">第 10 章 常见问题（FAQ）</h1>
+
+<h3>Q1：大屏上某楼栋显示 0F，或选中楼栋后楼层列表为空？</h3>
+<p>楼层数来自后台「楼栋管理」中该楼栋的层数配置。处理：进入「管理后台 → 楼栋管理」，点击该楼栋「编辑」，把层数改为正确值（如 6）保存；如需逐层信息，再在「楼层配置」页签补录。保存后刷新大屏即显示。</p>
+
+<h3>Q2：大屏三维场景一直显示「模型加载中」？</h3>
+<p>首次加载或网络较慢时属正常，请等待；若长时间不结束：检查服务器网络与带宽 → 强制刷新页面（Ctrl+F5）→ 在「管理后台 → 场景模型上传」确认模型文件有效，必要时重新上传。</p>
+
+<h3>Q3：页面提示接口请求失败 / 菜单空白？</h3>
+<p>多为后端服务未启动或网络不通。确认地址 http://117.21.178.39:5168 可达；若本机代理或防火墙拦截 5168 端口请放行；稍后刷新页面重试（应用会重新自动登录）。</p>
+
+<h3>Q4：忘记密码或需要新增账号？</h3>
+<p>由管理员在「管理后台 → 用户管理」重置密码或新增账号；普通用户请联系系统管理员处理。</p>
+
+<h3>Q5：审查追踪里的记录能不能修改或删除？</h3>
+<p>不能。审计记录采用 append-only 哈希链保护，任何账号（包括 admin）均无法修改或删除历史记录，这是合规要求的设计特性。如需留档请使用页面的导出功能。</p>
+
+<h3>Q6：大屏布局/样式改坏了想还原？</h3>
+<p>分别进入「大屏布局 DIY」与「大屏样式配置」，点击「恢复默认」即可还原出厂配置。</p>
+
+<h3>Q7：导出的文件在哪里？</h3>
+<p>浏览器下载目录。审查追踪、能耗报表等导出均为标准 CSV/JSON/Excel 文件，CSV 文件含 UTF-8 BOM，Excel 可直接打开不乱码。</p>
+
+<p>&nbsp;</p>
+<p class="doc-meta">—— 本指南基于平台 V1.0 线上版本编制，界面随版本迭代可能微调，以线上实际界面为准。——</p>
+</section>
+
+</body>
+</html>

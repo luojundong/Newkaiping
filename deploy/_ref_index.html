@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="kWOHbO9DjjAHfwg6tv7sdS">
+<head data-page-node-id="SXCUixKzYHkxCH43IBuKRx">
+<meta charset="UTF-8" data-page-node-id="sWdtJ3BRhx5mJh8hLuAuGX">
+<meta name="viewport" content="width=device-width,initial-scale=1" data-page-node-id="FZeLBUG8Uzw6VPokLViKJr">
+<title>开平市中心医院数字孪生驾驶舱 · 大屏</title>
+<style>
+/* ============================================================
+   开平市中心医院数字孪生驾驶舱 · 大屏（7 屏 · 单文件 · 无外链）
+   颜色 token 全部来自 design/hud-dashboard-style-spec-v1.md §2
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#04101E}
+body{
+  font-family:"Microsoft YaHei UI","PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;color:#E8F4FF;
+  /* 铺满全屏：缩放留出的边沿用同款深空渐变，视觉上无黑边/割裂 */
+  background:radial-gradient(120% 120% at 50% 15%,#0C2D55 0%,#072038 45%,#04101E 100%);
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 50% 42%,rgba(53,197,255,.10) 0%,rgba(53,197,255,0) 62%);
+}
+#stage{
+  position:absolute;left:50%;top:50%;margin-left:-960px;margin-top:-540px;
+  width:1920px;height:1080px;transform-origin:50% 50%;
+  background:linear-gradient(180deg,#04101E 0%,#072038 52%,#0A2342 100%);
+  user-select:none;overflow:hidden;
+}
+#stage::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(53,197,255,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(53,197,255,.05) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+
+/* ---------- 通用文字 ---------- */
+.t1{color:#EAF6FF}.t2{color:#E8F4FF}.t3{color:#9FC3E0}.t4{color:#62809C}
+.num{font-weight:700;color:#FFFFFF;font-size:27px;line-height:1.1;letter-spacing:.5px}
+.unit{font-size:12px;color:#62809C;margin-left:4px;font-weight:400}
+.lbl{font-size:12px;color:#9FC3E0}
+
+/* ---------- 面板 Chrome（规范 §3） ---------- */
+.panel{
+  position:absolute;background:rgba(10,28,52,.82);
+  border:1px solid #1E4E7E;border-radius:4px;
+}
+.panel .c{position:absolute;width:12px;height:12px;pointer-events:none}
+.panel .c.tl{left:-1px;top:-1px;border-left:2px solid #35C5FF;border-top:2px solid #35C5FF;border-top-left-radius:4px}
+.panel .c.tr{right:-1px;top:-1px;border-right:2px solid #35C5FF;border-top:2px solid #35C5FF;border-top-right-radius:4px}
+.panel .c.bl{left:-1px;bottom:-1px;border-left:2px solid #35C5FF;border-bottom:2px solid #35C5FF;border-bottom-left-radius:4px}
+.panel .c.br{right:-1px;bottom:-1px;border-right:2px solid #35C5FF;border-bottom:2px solid #35C5FF;border-bottom-right-radius:4px}
+.p-hd{position:relative;height:36px;display:flex;align-items:center;gap:8px;padding:0 12px}
+.p-hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,#35C5FF 0%,rgba(53,197,255,0) 100%)}
+.p-bar{width:4px;height:16px;background:#35C5FF;flex:none}
+.p-title{font-size:15px;color:#EAF6FF;letter-spacing:1.5px;font-weight:600}
+.p-chev{margin-left:auto;display:flex;align-items:center;color:#35C5FF;opacity:.85}
+.p-bd{position:relative;padding:14px;height:calc(100% - 36px);overflow:hidden}
+
+/* ---------- 全局 7 屏导航 ---------- */
+.topnav{position:absolute;left:0;top:0;width:1920px;height:48px;z-index:60;
+  display:flex;align-items:center;gap:10px;padding:0 22px;
+  background:linear-gradient(180deg,rgba(8,26,48,.95),rgba(8,26,48,.55));
+  border-bottom:1px solid rgba(53,197,255,.35)}
+.topnav .brand{font-size:15px;font-weight:700;color:#EAF6FF;letter-spacing:2px;white-space:nowrap;
+  text-shadow:0 0 10px rgba(53,197,255,.45)}
+.topnav .brand small{display:block;font-size:10px;color:#62809C;letter-spacing:2px;font-weight:400}
+.topnav .tabs{margin-left:auto;display:flex;gap:8px}
+.ntab{height:32px;padding:0 16px;display:flex;align-items:center;gap:6px;cursor:pointer;
+  background:rgba(10,28,52,.7);border:1px solid #1E4E7E;border-radius:4px;
+  font-size:14px;color:#9FC3E0;white-space:nowrap;transition:all .15s}
+.ntab:hover{border-color:#35C5FF;color:#EAF6FF}
+.ntab.on{background:#35C5FF;border-color:#35C5FF;color:#04101E;font-weight:700}
+.ntab .ni{font-size:11px;color:rgba(4,16,30,.6);font-weight:700}
+
+/* ---------- 屏容器 ---------- */
+.screen{position:absolute;left:0;top:0;width:1920px;height:1080px;display:none}
+.screen.on{display:block}
+
+/* ---------- 图1 标题栏 [40,48,1840,72] ---------- */
+#scr1 #w_title{position:absolute;left:40px;top:48px;width:1840px;height:72px}
+#scr1 #w_title::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,rgba(53,197,255,0) 0%,rgba(53,197,255,.55) 50%,rgba(53,197,255,0) 100%)}
+.tb-mid{position:absolute;left:0;right:0;top:6px;text-align:center;pointer-events:none}
+.tb-mid h1{font-size:30px;font-weight:700;color:#FFFFFF;letter-spacing:6px;
+  text-shadow:0 0 12px rgba(53,197,255,.55)}
+.tb-mid .sub{margin-top:4px;font-size:11px;color:#62809C;letter-spacing:3px}
+.tb-left{position:absolute;left:8px;top:22px;display:flex;align-items:center;gap:16px}
+.wx{display:flex;align-items:center;gap:6px;font-size:13px;color:#E8F4FF}
+.wx .v{font-size:16px;font-weight:700;color:#FFFFFF}
+.wx .s{color:#9FC3E0;font-size:12px}
+.tb-sep{width:1px;height:18px;background:rgba(53,197,255,.28)}
+.tb-right{position:absolute;right:8px;top:16px;text-align:right}
+.tb-right .d{font-size:13px;color:#9FC3E0;letter-spacing:1px}
+.tb-right .t{font-size:24px;font-weight:700;color:#FFFFFF;letter-spacing:2px;margin-top:2px}
+
+/* ---------- 楼栋导航 [40,128,1840,56] ---------- */
+#scr1 #w_building_nav{position:absolute;left:40px;top:128px;width:1840px;height:56px;
+  display:flex;align-items:center;justify-content:center;gap:10px}
+.btab{height:36px;padding:0 22px;display:flex;align-items:center;gap:8px;
+  background:rgba(10,28,52,.82);border:1px solid #1E4E7E;border-radius:4px;
+  font-size:14px;color:#9FC3E0;cursor:pointer;white-space:nowrap;transition:all .15s}
+.btab .idx{font-size:11px;color:#62809C;font-variant-numeric:tabular-nums}
+.btab:hover{border-color:#35C5FF;color:#EAF6FF}
+.btab.on{background:#35C5FF;border-color:#35C5FF;color:#04101E;font-weight:700}
+.btab.on .idx{color:rgba(4,16,30,.65)}
+
+#bldTip{position:absolute;z-index:70;width:280px;padding:10px 12px;display:none;
+  background:rgba(6,20,38,.96);border:1px solid #35C5FF;border-radius:4px;
+  box-shadow:0 6px 24px rgba(0,0,0,.55)}
+#bldTip .n{font-size:14px;color:#EAF6FF;font-weight:600;letter-spacing:.5px}
+#bldTip .r{display:flex;justify-content:space-between;font-size:12px;margin-top:5px}
+#bldTip .r span:first-child{color:#62809C}
+#bldTip .r span:last-child{color:#E8F4FF;font-variant-numeric:tabular-nums}
+#bldTip .hr{height:1px;background:rgba(53,197,255,.22);margin:8px 0 6px}
+#bldTip .cap{font-size:11px;color:#62809C;letter-spacing:1px}
+#bldTip .dev{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;margin-top:6px}
+#bldTip .dev div{font-size:11px;color:#9FC3E0;font-variant-numeric:tabular-nums}
+#bldTip .dev div b{color:#FFFFFF;font-size:12px;font-weight:700}
+#bldTip .tot{margin-top:8px;font-size:12px;color:#35C5FF}
+#bldTip .tot b{font-size:16px;color:#FFFFFF;font-weight:700}
+
+/* ---------- 楼层列表 [480,200,120,380] ---------- */
+#w_floor_list{z-index:20}
+#w_floor_list .p-bd{padding:8px;display:flex;flex-direction:column;gap:2px;align-items:stretch;height:100%}
+.fl{width:100%;height:22px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#9FC3E0;background:rgba(30,78,126,.22);
+  border:1px solid #1E4E7E;border-radius:3px;cursor:pointer;
+  font-variant-numeric:tabular-nums;transition:all .15s}
+.fl:hover{border-color:#35C5FF;color:#EAF6FF}
+.fl.on{background:rgba(53,197,255,.18);border-color:#35C5FF;color:#FFFFFF;font-weight:700;
+  box-shadow:inset 0 0 10px rgba(53,197,255,.25)}
+
+/* ---------- 中央 3D 区：全屏模型（参考 demo/floor-f01）[0,0,1920,1080] ---------- */
+#w_scene{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:1;background:radial-gradient(circle at 50% 38%,#0E3358 0%,#06182E 72%)}
+/* 全屏模型时，标题/楼栋导航/弹窗/面板悬浮于模型之上 */
+#scr1 #w_title,#scr1 #w_building_nav,#scr1 #bldTip,#scr1 #note{z-index:16}
+#scr1 .panel{z-index:12}
+/* 图1 右列面板对称靠边（原被覆盖为 1410 → 右侧 90px 空隙） */
+#scr1 .col-r{left:1460px}
+#scene-canvas{width:100%;height:100%;display:block}
+.f1-loading{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#9FCBF0;font-size:15px;letter-spacing:1px;pointer-events:none;z-index:6}
+.f1-loading.hide{display:none}
+.f1-loading .ring{width:38px;height:38px;border:3px solid rgba(53,197,255,.25);border-top-color:#35C5FF;border-radius:50%;animation:spin360 .9s linear infinite}
+@keyframes spin360{to{transform:rotate(360deg)}}
+.bubble text{font-size:11px;fill:#EAF6FF;font-family:inherit}
+
+/* ---------- 列面板（图1，+32 偏移） ---------- */
+.col-l{left:40px}  .col-r{left:1460px}
+.col-l,.col-r{width:420px}
+.panel.h288{height:288px}
+.p192{top:192px}.p488{top:488px}.p784{top:784px}
+.pL1{top:192px}.pL2{top:412px}.pL3{top:632px}.pL4{top:852px}
+.h212{height:212px}
+.sub-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sub-code{font-size:12px;font-weight:700;color:#04101E;background:#35C5FF;border-radius:3px;padding:2px 7px;letter-spacing:.5px}
+.sub-name{font-size:13px;color:#EAF6FF;font-weight:600}
+.sub-rows{display:flex;flex-direction:column;gap:6px}
+.sub-row{display:flex;align-items:center;justify-content:space-between;background:rgba(30,78,126,.14);
+  border-left:2px solid rgba(53,197,255,.35);padding:5px 10px;border-radius:2px}
+.sub-row .k{font-size:12px;color:#9FC3E0}
+.sub-row .v{font-size:17px;font-weight:700;color:#FFFFFF;font-variant-numeric:tabular-nums}
+.sub-row .v .u{font-size:11px;color:#62809C;margin-left:3px;font-weight:400}
+
+/* KPI 行 */
+.kpis{display:flex;gap:8px}
+.kpi{flex:1;background:rgba(30,78,126,.18);border:1px solid rgba(30,78,126,.55);
+  border-radius:3px;padding:8px 8px 6px;text-align:center}
+.kpi .k{font-size:11px;color:#9FC3E0;letter-spacing:.5px;white-space:nowrap}
+.kpi .v{font-size:21px;font-weight:700;color:#FFFFFF;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .u{font-size:11px;color:#62809C;margin-left:2px;font-weight:400}
+.kpi.red .v{color:#FF5252}.kpi.amber .v{color:#FFB03A}.kpi.cyan .v{color:#35C5FF}
+.kpi.green .v{color:#34D98A}.kpi.blue .v{color:#2E8BFF}
+
+/* 图例 */
+.legend{display:flex;gap:12px;align-items:center;font-size:11px;color:#9FC3E0;margin:6px 0 2px;flex-wrap:wrap}
+.legend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:5px}
+.legend .li{display:flex;align-items:center}
+
+/* 院区总览行 */
+.ov-row{display:flex;align-items:center;gap:10px;height:40px;
+  background:rgba(30,78,126,.14);border-left:2px solid rgba(53,197,255,.35);padding:0 10px}
+.ov-row .ic{width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(53,197,255,.28);border-radius:3px;flex:none;color:#35C5FF}
+.ov-row .nm{font-size:12px;color:#9FC3E0}
+.ov-row .vl{margin-left:auto;text-align:right}
+.ov-row .vl .n{font-size:22px;font-weight:700;color:#FFFFFF;font-variant-numeric:tabular-nums}
+.ov-row .vl .u{font-size:11px;color:#62809C;margin-left:3px}
+.ov-note{margin-top:10px;font-size:11px;color:#62809C;line-height:1.5}
+
+/* 设备分类行 */
+.dv-row{display:flex;align-items:center;gap:8px;height:27px;font-size:12px}
+.dv-row .nm{width:74px;color:#9FC3E0;flex:none}
+.dv-row .tr{flex:1;height:6px;background:rgba(30,78,126,.35);border-radius:3px;overflow:hidden}
+.dv-row .tr i{display:block;height:100%;border-radius:3px}
+.dv-row .ct{width:56px;text-align:right;font-size:15px;font-weight:700;color:#FFFFFF;
+  font-variant-numeric:tabular-nums;flex:none}
+
+/* 设备在线 donut 区 */
+.on-wrap{display:flex;align-items:center;gap:14px;height:100%}
+.donut{position:relative;width:150px;height:150px;flex:none}
+.donut .ct{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;pointer-events:none}
+.donut .ct .n{font-size:26px;font-weight:700;color:#FFFFFF;font-variant-numeric:tabular-nums}
+.donut .ct .l{font-size:11px;color:#62809C;margin-top:2px}
+.donut .ct .p{font-size:12px;color:#34D98A;margin-top:3px}
+.on-leg{flex:1}
+.on-leg .li{display:flex;align-items:center;gap:8px;height:44px;
+  border-bottom:1px dashed rgba(30,78,126,.5)}
+.on-leg .li:last-child{border-bottom:none}
+.on-leg .li i{width:9px;height:9px;border-radius:2px;flex:none}
+.on-leg .li .nm{font-size:12px;color:#9FC3E0}
+.on-leg .li .rt{margin-left:auto;text-align:right}
+.on-leg .li .rt .n{font-size:18px;font-weight:700;color:#FFFFFF;font-variant-numeric:tabular-nums}
+.on-leg .li .rt .p{font-size:11px;color:#62809C;margin-left:5px}
+
+/* 底条 [640,932,640,140] */
+#panel-lighting{left:640px;top:872px;width:640px;height:200px}
+#panel-lighting .p-bd{padding:10px;display:block;overflow:hidden}
+.lit-box{border:1px solid rgba(53,197,255,.32);border-radius:4px;padding:8px;height:100%;
+  box-sizing:border-box;display:grid;grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(2,1fr);gap:8px;background:rgba(8,22,42,.35)}
+.bt{background:rgba(30,78,126,.16);border:1px solid rgba(30,78,126,.5);border-radius:3px;
+  padding:6px 10px;display:flex;flex-direction:column;justify-content:center}
+.bt .k{font-size:11px;color:#9FC3E0}
+.bt .v{font-size:19px;font-weight:700;color:#FFFFFF;font-variant-numeric:tabular-nums}
+.bt .v .u{font-size:11px;color:#62809C;margin-left:3px;font-weight:400}
+
+#note{position:absolute;right:40px;bottom:8px;font-size:11px;color:#62809C;letter-spacing:.5px;z-index:30}
+
+/* ============================================================
+   图2-7 通用子屏布局
+   ============================================================ */
+.shead{position:absolute;left:40px;top:56px;width:1840px;height:44px;
+  display:flex;align-items:center;gap:14px}
+.shead .st{font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:3px;
+  text-shadow:0 0 10px rgba(53,197,255,.4)}
+.shead .ss{font-size:12px;color:#9FC3E0;letter-spacing:2px}
+.shead .sclock{margin-left:auto;display:flex;align-items:flex-end;gap:14px}
+.shead .sclock .d{font-size:12px;color:#9FC3E0}
+.shead .sclock .t{font-size:20px;font-weight:700;color:#FFFFFF;letter-spacing:1px}
+
+.col{position:absolute;width:470px}
+.col-l{left:40px}.col-r{left:1410px}
+.h250{height:250px}
+.pl1{top:110px}.pl2{top:370px}.pl3{top:630px}
+.scenter{position:absolute;left:530px;top:110px;width:860px;height:540px}
+.sbot{position:absolute;left:40px;top:900px;width:1840px;height:150px}
+.sbot .p-bd{padding:10px}
+
+/* 子屏通用小组件 */
+.mini{font-size:12px;color:#9FC3E0}
+.mini b{color:#FFFFFF;font-weight:700}
+.row-line{display:flex;align-items:center;gap:8px;height:30px;font-size:12px;
+  border-bottom:1px dashed rgba(30,78,126,.4)}
+.row-line .nm{color:#9FC3E0;flex:none}
+.row-line .vl{margin-left:auto;color:#E8F4FF;font-variant-numeric:tabular-nums;font-weight:700}
+.row-line .vl.warn{color:#FFB03A}.row-line .vl.bad{color:#FF5252}.row-line .vl.ok{color:#34D98A}
+
+/* 链路图（图2 空调总览） */
+.chain{display:flex;align-items:stretch;gap:0;height:100%}
+.chain .node{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(30,78,126,.18);border:1px solid rgba(30,78,126,.6);border-radius:4px;position:relative;padding:6px}
+.chain .node .cn{font-size:13px;color:#EAF6FF;font-weight:600}
+.chain .node .cv{font-size:11px;color:#9FC3E0;margin-top:3px}
+.chain .node .cl{font-size:18px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.chain .arrow{width:26px;display:flex;align-items:center;justify-content:center;color:#35C5FF}
+.chain .node .st{position:absolute;top:6px;right:8px;font-size:10px;padding:1px 6px;border-radius:8px}
+.st.run{background:rgba(52,217,138,.18);color:#34D98A;border:1px solid rgba(52,217,138,.5)}
+.st.warn{background:rgba(255,176,58,.18);color:#FFB03A;border:1px solid rgba(255,176,58,.5)}
+.st.stop{background:rgba(255,82,82,.18);color:#FF5252;border:1px solid rgba(255,82,82,.5)}
+
+/* 温度热力格 */
+.heat{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;height:100%}
+.heat .cell{border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:11px;color:#04101E;font-weight:700;border:1px solid rgba(255,255,255,.12)}
+.heat .cell small{font-size:9px;font-weight:400;opacity:.85}
+
+/* 告警/记录列表 */
+.lst{height:100%;overflow:hidden;display:flex;flex-direction:column;gap:5px}
+.lst .it{background:rgba(30,78,126,.14);border-left:2px solid rgba(53,197,255,.35);
+  padding:6px 8px;font-size:12px;display:flex;align-items:center;gap:8px}
+.lst .it .tg{font-size:10px;padding:1px 6px;border-radius:8px;flex:none}
+.tg.u{background:rgba(255,82,82,.18);color:#FF5252}
+.tg.m{background:rgba(255,176,58,.18);color:#FFB03A}
+.tg.n{background:rgba(46,139,255,.18);color:#2E8BFF}
+.tg.ok{background:rgba(52,217,138,.18);color:#34D98A}
+.lst .it .tx{color:#E8F4FF;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lst .it .tm{color:#62809C;font-size:11px;font-variant-numeric:tabular-nums}
+
+/* 表格式列表 */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{color:#9FC3E0;font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid rgba(53,197,255,.3)}
+.tbl td{color:#E8F4FF;padding:5px 8px;border-bottom:1px dashed rgba(30,78,126,.4);font-variant-numeric:tabular-nums}
+.tbl tr:hover td{background:rgba(53,197,255,.08)}
+
+/* 井道行程图 */
+.shafts{display:flex;gap:14px;height:100%;align-items:stretch;justify-content:center}
+.shaft{flex:1;position:relative;border:1px solid rgba(30,78,126,.6);border-radius:4px;
+  background:repeating-linear-gradient(180deg,rgba(30,78,126,.12) 0,rgba(30,78,126,.12) 1px,transparent 1px,transparent 26px)}
+.shaft .car{position:absolute;left:6px;right:6px;height:22px;background:rgba(53,197,255,.35);
+  border:1px solid #35C5FF;border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:#EAF6FF;font-weight:700}
+.shaft .cap{position:absolute;top:-2px;left:0;right:0;text-align:center;font-size:11px;color:#9FC3E0;transform:translateY(-100%)}
+
+/* 漏斗 */
+.funnel{display:flex;flex-direction:column;gap:8px;height:100%;justify-content:center}
+.funnel .f{display:flex;align-items:center;gap:10px}
+.funnel .fb{height:30px;display:flex;align-items:center;justify-content:center;color:#04101E;font-weight:700;font-size:13px;border-radius:3px}
+
+/* 空间树 */
+.tree{height:100%;overflow:auto;font-size:12px;padding-right:6px}
+.tree .b{margin-bottom:4px}
+.tree .bh{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 6px;
+  background:rgba(30,78,126,.2);border-radius:3px;color:#EAF6FF;font-weight:600}
+.tree .bh .ct{margin-left:auto;color:#35C5FF;font-weight:700}
+.tree .fl{margin:3px 0 3px 16px;padding:3px 6px;background:rgba(30,78,126,.1);
+  border-left:2px solid rgba(53,197,255,.3);color:#9FC3E0;border-radius:2px}
+.tree .rm{margin:2px 0 2px 30px;padding:2px 6px;color:#E8F4FF;font-size:11px}
+
+/* 健康度仪表 */
+.gauge{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
+.gauge .score{font-size:46px;font-weight:700;color:#34D98A;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 14px rgba(52,217,138,.5)}
+.gauge .lab{font-size:12px;color:#9FC3E0;margin-top:4px}
+
+/* 健康度卡片（6 台） */
+.hcards{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;height:100%}
+.hcard{background:rgba(30,78,126,.16);border:1px solid rgba(30,78,126,.5);border-radius:3px;
+  padding:8px 6px;display:flex;flex-direction:column;justify-content:center;text-align:center}
+.hcard .hn{font-size:11px;color:#9FC3E0;white-space:nowrap}
+.hcard .hv{font-size:18px;font-weight:700;color:#FFFFFF;margin-top:4px;font-variant-numeric:tabular-nums}
+.hcard .hs{font-size:10px;margin-top:2px}
+
+/* 图7 权威表 */
+.t7wrap{position:absolute;left:40px;top:120px;width:1840px;bottom:60px;overflow:auto}
+.t7{width:100%;border-collapse:collapse;font-size:15px}
+.t7 th{background:rgba(30,78,126,.4);color:#EAF6FF;font-weight:700;padding:12px 16px;
+  text-align:left;border-bottom:2px solid #35C5FF;letter-spacing:1px}
+.t7 td{padding:11px 16px;border-bottom:1px solid rgba(30,78,126,.45);color:#E8F4FF;
+  font-variant-numeric:tabular-nums}
+.t7 tr:hover td{background:rgba(53,197,255,.07)}
+.t7 .bno{color:#35C5FF;font-weight:700}
+.t7 .pend{color:#FFB03A;font-weight:700}
+.t7 tfoot td{background:rgba(10,28,52,.9);color:#FFFFFF;font-weight:700;font-size:16px;
+  border-top:2px solid #35C5FF}
+.t7 .right{text-align:right}
+
+/* ---------- 图1 驾驶舱 S1-S7 七宫格图表（参考科技蓝大屏） ---------- */
+.ck{height:100%;display:flex;flex-direction:column;justify-content:center}
+.ck-row{display:flex;align-items:center;gap:14px;min-height:0}
+.ck-ring{position:relative;width:122px;height:122px;flex:none}
+.ck-ring svg{position:absolute;left:0;top:0}
+.dk-ctr{position:absolute;left:0;top:0;width:122px;height:122px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.dk-ctr b{font-size:20px;color:#FFFFFF;font-weight:800;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.dk-ctr span{font-size:10px;color:#62809C;margin-top:2px;letter-spacing:1px}
+.ck-lg{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.ck-lg .lr{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9FC3E0}
+.ck-lg .lr i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ck-lg .lr b{color:#EAF6FF;font-weight:700;font-variant-numeric:tabular-nums}
+.ck-kpis{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;margin-bottom:6px}
+.ck-kpi{display:flex;align-items:baseline;gap:4px;font-size:11px;color:#9FC3E0}
+.ck-kpi b{font-size:17px;font-weight:800;color:#FFFFFF;font-variant-numeric:tabular-nums}
+.ck-kpi em{font-style:normal;color:#62809C;font-size:10px}
+.ck-svg{flex:1;min-height:0;display:flex;align-items:center}
+.ck-svg svg{width:100%}
+.ck-foot{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#62809C;margin-top:4px}
+.ck-foot .fb{color:#35C5FF;letter-spacing:.5px}
+/* 树状图（S5 电力计量） */
+.ck-tree{display:flex;flex-direction:column;height:100%}
+.ct-l0{display:flex;align-items:center;gap:6px;background:rgba(53,197,255,.12);border:1px solid rgba(53,197,255,.45);border-radius:3px;padding:4px 8px;font-size:12.5px;color:#EAF6FF;font-weight:600}
+.ct-l0 b{margin-left:auto;color:#35C5FF;font-weight:700;font-variant-numeric:tabular-nums}
+.ct-br{position:relative;padding:3px 0 3px 18px}
+.ct-br::before{content:"";position:absolute;left:6px;top:2px;bottom:2px;width:1px;background:rgba(53,197,255,.25)}
+.ct-l1{position:relative;display:flex;align-items:center;gap:5px;padding:2px 6px;font-size:12px;color:#9FC3E0}
+.ct-l1::before{content:"";position:absolute;left:-12px;top:50%;width:12px;height:1px;background:rgba(53,197,255,.25)}
+.ct-l1 i{width:7px;height:7px;border:1.5px solid #35C5FF;transform:rotate(45deg);flex:none}
+.ct-l1 b{margin-left:auto;color:#EAF6FF;font-weight:600;font-variant-numeric:tabular-nums}
+.ct-leaf{margin-left:18px;display:flex;gap:5px;flex-wrap:wrap;padding:2px 6px}
+.ct-leaf span{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:#8FA6BE;border:1px solid rgba(30,78,126,.5);border-radius:2px;padding:1px 5px}
+.ct-leaf span i{width:4px;height:4px;border-radius:50%;background:#34D98A;display:inline-block}
+.ct-alert{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:#FFB03A;border-top:1px dashed rgba(255,176,58,.35);padding-top:5px}
+/* 圆圈（S6 热水机组圆环） */
+.ck-gauges{display:flex;justify-content:space-around;align-items:center}
+.gm{display:flex;flex-direction:column;align-items:center;gap:3px;width:86px}
+.gm .gl{font-size:11px;color:#9FC3E0;display:flex;align-items:baseline;gap:2px}
+.gm .gl b{color:#FFFFFF;font-size:14px;font-variant-numeric:tabular-nums}
+.gm .gt{font-size:10px;color:#62809C}
+.ck-uni{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ck-uni span{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:#9FC3E0;background:rgba(30,78,126,.18);border-radius:2px;padding:2px 6px}
+.ck-uni i{width:7px;height:7px;border-radius:50%;display:inline-block}
+/* 科技蓝主卡（S7 电梯） */
+.cb{height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(135deg,rgba(53,197,255,.16),rgba(46,139,255,.05) 55%,rgba(10,28,52,.25));
+  border:1px solid rgba(53,197,255,.35);border-radius:3px;padding:8px 10px}
+.cb-t{display:flex;align-items:center;gap:8px;font-size:13px;color:#EAF6FF;letter-spacing:2px;font-weight:600}
+.cb-t::before{content:"";width:6px;height:18px;background:linear-gradient(180deg,#35C5FF,#2E8BFF);box-shadow:0 0 8px rgba(53,197,255,.8)}
+.cb-nums{display:flex;justify-content:space-between;align-items:flex-end}
+.cb-nums .ni{text-align:center}
+.cb-nums .ni b{font-size:26px;font-weight:800;color:#FFFFFF;text-shadow:0 0 14px rgba(53,197,255,.55);font-variant-numeric:tabular-nums}
+.cb-nums .ni span{display:block;font-size:10.5px;color:#9FC3E0;margin-top:2px;letter-spacing:1px}
+.cb-line{height:1px;margin:7px 0;background:linear-gradient(90deg,rgba(53,197,255,.6),rgba(53,197,255,.05))}
+.cb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cb-cell{background:rgba(6,20,38,.45);border:1px solid rgba(53,197,255,.18);border-radius:2px;padding:3px 6px;text-align:center}
+.cb-cell b{display:block;font-size:15px;color:#EAF6FF;font-variant-numeric:tabular-nums}
+.cb-cell span{font-size:9.5px;color:#62809C}
+.cb-foot{margin-top:8px;font-size:11px;color:#7AA8FF;display:flex;align-items:center;gap:6px}
+.cb-foot i{width:6px;height:6px;border-radius:50%;background:#35C5FF;box-shadow:0 0 8px #35C5FF;display:inline-block}
+</style>
+</head>
+<body data-page-node-id="k34UPHytu8198eH1fR7W0b">
+<div id="stage" data-page-node-id="Ll4TcDCzOOi08fPjX0qUCH">
+
+  <!-- ========== 全局 7 屏导航 ========== -->
+  <nav class="topnav" data-page-node-id="ywZjwI4fJcLZGB6SSjowy2">
+    <div class="brand" data-page-node-id="NHXWLD2u1CLCbvW1wojrlY">开平市中心医院数字孪生<small data-page-node-id="oahpjHp7lDtv23yMMvuXVe">KAIPING CENTRAL HOSPITAL · DIGITAL TWIN</small></div>
+    <div class="tabs" id="tabs" data-page-node-id="R5CzHcfFBWuHJPgDncgdwc">
+      <div class="ntab on" data-s="1" data-page-node-id="MxtuQsBfqPHTLbT4bm3YfC"><span class="ni" data-page-node-id="cV3jxBCdXhUHToORXBJvCV">图1</span>主驾驶舱</div>
+      <div class="ntab" data-s="2" data-page-node-id="T8L7FmOgT6j4ko3qGtJL4D"><span class="ni" data-page-node-id="HXDpDlD8GBJ4gTb5t2PpIu">图2</span>空调与能源</div>
+      <div class="ntab" data-s="3" data-page-node-id="Nbl4Aq2pqODoT7KEDwauUr"><span class="ni" data-page-node-id="oUV9Kz8pzWdajPO5JIyQP1">图3</span>电梯安全</div>
+      <div class="ntab" data-s="4" data-page-node-id="Wac2TAnwclFnvxtTMLpfjw"><span class="ni" data-page-node-id="ZbbpYSpXAtpxD6hcoHLcHN">图4</span>供配电计量</div>
+      <div class="ntab" data-s="5" data-page-node-id="OhorYTERdX6qwXmqai8uCo"><span class="ni" data-page-node-id="iaEkH9Y9f5FiwJb1CHxRYS">图5</span>告警工单</div>
+      <div class="ntab" data-s="6" data-page-node-id="FVhmfCfmfIuNkNk0QCAhSV"><span class="ni" data-page-node-id="ofMvJaFuJy8dcbFH6tdnkQ">图6</span>空间设备运维</div>
+      <div class="ntab" data-s="7" data-page-node-id="opNWqBWIkxuMBTogSitGbD"><span class="ni" data-page-node-id="dOvNKztp60vsGTbgFRUplC">图7</span>建筑面积表</div>
+    </div>
+  </nav>
+
+  <!-- ================= 图1 主驾驶舱 ================= -->
+  <section class="screen on" id="scr1" data-page-node-id="8hEt4S8mpj7CDFd0pG6Blr">
+    <div id="w_title" data-page-node-id="GENoO7MrLvc0jEB3xtq9sI">
+      <div class="tb-left" id="wx" data-page-node-id="kqGHLKCXzCSacuCZAHNHij"></div>
+      <div class="tb-mid" data-page-node-id="PXuCcapkH5EMrr8hOmvQwM">
+        <h1 data-page-node-id="gXnpJ6QZiBO5G5cdMdOcFO">开平市中心医院数字孪生驾驶舱</h1>
+        <div class="sub" data-page-node-id="NerCFmH76ojLyIBMXSjkEm">KAIPING CENTRAL HOSPITAL DIGITAL TWIN OPERATION CENTER</div>
+      </div>
+      <div class="tb-right" data-page-node-id="h7MXma9OWzbqlGhsiBuj9M">
+        <div class="d" id="clk-d" data-page-node-id="Q4ptUFGR6wZwE8IhkHWHAr">--</div>
+        <div class="t" id="clk-t" data-page-node-id="kEi6rSpsbCgfJePOBpJfJ3">--:--:--</div>
+      </div>
+    </div>
+
+    <div id="w_building_nav" data-page-node-id="QBEKfm7EJkSYRXO6UUmJe2"></div>
+    <div id="bldTip" data-page-node-id="yVtc1hgRQVwSHUBEdGPARW"></div>
+    <div id="w_scene" data-page-node-id="MyEHBgMeRfYTILnwPrKm8U"><canvas id="scene-canvas"></canvas>
+      <div id="f1-loading" class="f1-loading"><div class="ring"></div><div id="f1-loading-txt">F1 模型加载中…</div></div>
+    </div>
+
+
+    <div id="w_floor_list" style="position:absolute;left:480px;top:200px;width:120px;height:380px;background:transparent;overflow:hidden">
+      <div id="floor-body" style="padding:8px;height:100%;overflow:hidden"></div>
+    </div>
+
+    <div class="panel col-l pL1 h212" data-title="S1 · 智慧能源一体化调控" data-icon="gauge" data-page-node-id="S1PNL"><div class="p-bd" id="w_s1"></div></div>
+    <div class="panel col-l pL2 h212" data-title="S2 · 设备生命周期管理" data-icon="cpu" data-page-node-id="S2PNL"><div class="p-bd" id="w_s2"></div></div>
+    <div class="panel col-l pL3 h212" data-title="S3 · 空调集中控制调度" data-icon="thermometer" data-page-node-id="S3PNL"><div class="p-bd" id="w_s3"></div></div>
+    <div class="panel col-l pL4 h212" data-title="S4 · 智慧照明管理" data-icon="bulb" data-page-node-id="S4PNL"><div class="p-bd" id="w_s4"></div></div>
+
+    <div class="panel col-r p192 h288" data-title="S5 · 医院电力监控" data-icon="zap" data-page-node-id="S5PNL"><div class="p-bd" id="w_s5"></div></div>
+    <div class="panel col-r p488 h288" data-title="S6 · 热水集中控制调度" data-icon="drop" data-page-node-id="S6PNL"><div class="p-bd" id="w_s6"></div></div>
+    <div class="panel col-r p784 h288" data-title="S7 · 电梯节能管理" data-icon="activity" data-page-node-id="S7PNL"><div class="p-bd" id="w_s7"></div></div>
+
+    <div class="panel" id="panel-lighting" data-title="今日运行情况" data-icon="chart" data-page-node-id="PT3CiJ207rHjAAKig7aLz6"><div class="p-bd" id="bd-lighting" data-page-node-id="bvLlsIU0zFY26GlBw5epc1"></div></div>
+
+    <div id="note" data-page-node-id="Y2Eqqod3JcMfkhAJWM9ycF">* 部分指标为示意值（MOCK(PDF)）：在线/离线/告警、能源、告警、工单、运行概况、天气</div>
+  </section>
+
+  <!-- ================= 图2 空调与能源管控 ================= -->
+  <section class="screen" id="scr2" data-page-node-id="VcPGD4q5wfmGik0A5fVdFD">
+    <div class="shead" data-page-node-id="72UGsoqEIDF4cBOftW0pd6">
+      <span class="st" data-page-node-id="CywklCQLWGRHdMMFUAg97m">空调与能源管控驾驶舱</span>
+      <span class="ss" data-page-node-id="XjYUjwEmA0a2f3fg1iE9vJ">HVAC &amp; ENERGY CONTROL</span>
+      <div class="sclock" data-page-node-id="dYCUXqsnCRvJbq8RhzxKCN"><span class="d gclock-d" data-page-node-id="PSLPLnTRsD3hXDHBSMkccg">--</span><span class="t gclock-t" data-page-node-id="auoXORbW6ByFA12Pu4hiJj">--:--:--</span></div>
+    </div>
+    <div class="panel scenter" data-title="空调系统总览（冷机→冷却塔→水泵→末端）" data-icon="wind" data-page-node-id="URnUL9bl3Ya7UXd0bap7vQ"><div class="p-bd" id="s2-link" data-page-node-id="uHFLn43WWZ5UZB2TqYrHoE"></div></div>
+    <div class="panel col col-l pl1 h250" data-title="分区温度热力" data-icon="thermometer" data-page-node-id="WQUCptXFJYMIdlSvoxsPWj"><div class="p-bd" id="s2-zone" data-page-node-id="JumyCTuHskMFf9hG1XBQYl"></div></div>
+    <div class="panel col col-l pl2 h250" data-title="故障告警" data-icon="alert" data-page-node-id="3n1WkZOEi1uvSjGVAl8tGm"><div class="p-bd" id="s2-fault" data-page-node-id="gpkPDhfWKh8j36WJDmyDoH"></div></div>
+    <div class="panel col col-l pl3 h250" data-title="运行策略 / 逆控状态" data-icon="leaf" data-page-node-id="m6lZf1d4q4WsX0tyyjKFDG"><div class="p-bd" id="s2-strat" data-page-node-id="D5VSkSn1b1CDFxYn5Iv1wK"></div></div>
+    <div class="panel col col-r pl1 h250" data-title="能效分析" data-icon="chart" data-page-node-id="10Y9keKlrwWddeHacpfqDm"><div class="p-bd" id="s2-eff" data-page-node-id="i1qTVBFQr2zWC8owuOsAz0"></div></div>
+    <div class="panel col col-r pl2 h250" data-title="能耗占比" data-icon="layers" data-page-node-id="VpVvQPSWUiSpcELpLuGC2Z"><div class="p-bd" id="s2-share" data-page-node-id="gFtGCWtTxN612S4R265Irw"></div></div>
+    <div class="panel col col-r pl3 h250" data-title="能耗排名（按楼栋）" data-icon="building" data-page-node-id="QarDc9cVNC1vVaAejUFX2l"><div class="p-bd" id="s2-rank" data-page-node-id="H2pTm1WbgAVHmGenkkcL6b"></div></div>
+    <div class="panel sbot" data-title="运行趋势（进出水温） / 设备健康度" data-icon="activity" data-page-node-id="7NC9MfLSLU0N2ai8pg29P0"><div class="p-bd" id="s2-bot" data-page-node-id="xsf2O5TXgLUxQO5dJFm2hT"></div></div>
+  </section>
+
+  <!-- ================= 图3 电梯安全运行 ================= -->
+  <section class="screen" id="scr3" data-page-node-id="8z5xOEzWe9WrxtZdnOF5yc">
+    <div class="shead" data-page-node-id="zyrFmiyzqpYMv6jFjJPt6E">
+      <span class="st" data-page-node-id="bLvqtUx0yeBBF6lx3NcDE3">电梯安全运行驾驶舱</span>
+      <span class="ss" data-page-node-id="SydaQY2pj9zuYNQqs4Sflh">ELEVATOR SAFETY</span>
+      <div class="sclock" data-page-node-id="e2kaYSWQhDmkMt1mIWr8cr"><span class="d gclock-d" data-page-node-id="JQWyWfp3A7nV5VkDTo6sr7">--</span><span class="t gclock-t" data-page-node-id="0h8pFfXh8FvHvDNns7fbi6">--:--:--</span></div>
+    </div>
+    <div class="panel scenter" data-title="电梯编号表" data-icon="grid" data-page-node-id="LdXR5B51M6xboviKxKLYuY"><div class="p-bd" id="s3-center" data-page-node-id="ukvGyuM66Eu0xDCj8km206"></div></div>
+    <div class="panel col col-l pl1 h250" data-title="电梯总览" data-icon="users" data-page-node-id="Wz1kGQA3p1Pa0cgq6EX9Gy"><div class="p-bd" id="s3-over" data-page-node-id="N9fWjDvX6oU7GuXLKEiP11"></div></div>
+    <div class="panel col col-l pl2 h250" data-title="故障告警" data-icon="alert" data-page-node-id="0u9vtj1Iwy8bxtgoTVYDHd"><div class="p-bd" id="s3-fault" data-page-node-id="uDoEJq8oluvEPLHC42snjl"></div></div>
+    <div class="panel col col-l pl3 h250" data-title="运行统计" data-icon="chart" data-page-node-id="yZOkChXBDUi9vm12095vYt"><div class="p-bd" id="s3-stat" data-page-node-id="oDx25FstGiZL5mivVZ1TMC"></div></div>
+    <div class="panel col col-r pl1 h250" data-title="实时位置（井道行程图）" data-icon="chev" data-page-node-id="lEqfyaTUosT7RWBhWnQevi"><div class="p-bd" id="s3-shaft" data-page-node-id="YZlhtYWT7vNCbRLpel8Kbb"></div></div>
+    <div class="panel col col-r pl2 h250" data-title="维保计划" data-icon="clipboard" data-page-node-id="6i92ZjhX6GLOoL78deAubz"><div class="p-bd" id="s3-maint" data-page-node-id="4J0qtS6dTRyWeclYq4P21M"></div></div>
+    <div class="panel col col-r pl3 h250" data-title="工单统计" data-icon="check" data-page-node-id="Cmf9MjAfRveah2aLf7sSKo"><div class="p-bd" id="s3-wo" data-page-node-id="ML5wlg4s826Hm0lxK11bZa"></div></div>
+    <div class="panel sbot" data-title="运行统计 / 平均响应 / 巡检 / 工单" data-icon="activity" data-page-node-id="jJzHPxNTznVBpDwWnqHA0L"><div class="p-bd" id="s3-bot" data-page-node-id="PigO2oh63U7s2fS42O79yB"></div></div>
+  </section>
+
+  <!-- ================= 图4 供配电与计量 ================= -->
+  <section class="screen" id="scr4" data-page-node-id="320SfnkJWkHgDapjoxJsJx">
+    <div class="shead" data-page-node-id="wrLr62BWkGoHmPwBFemF47">
+      <span class="st" data-page-node-id="kGkdsvfgO5p3UQRiaLRtjB">供配电与计量驾驶舱</span>
+      <span class="ss" data-page-node-id="nx4VGZFCrsKmR5sypkLGHq">POWER &amp; METERING</span>
+      <div class="sclock" data-page-node-id="WA8E4GHOSsp92oaiINs05A"><span class="d gclock-d" data-page-node-id="qATY2iVY3M5As3SCbXDCkY">--</span><span class="t gclock-t" data-page-node-id="j8AZ9RfsBQ7o1ZT1QCfVSb">--:--:--</span></div>
+    </div>
+    <div class="panel scenter" data-title="配电总览（2 路 10kV + 2 变压器）" data-icon="zap" data-page-node-id="pyuMW3N4sFgtbGdHghg6b6"><div class="p-bd" id="s4-over" data-page-node-id="wZ5LvFoVaZ1ERt1WMMgAg2"></div></div>
+    <div class="panel col col-l pl1 h250" data-title="变压器负载" data-icon="chart" data-page-node-id="RHgbAwx2CwfvcplCCMuyJn"><div class="p-bd" id="s4-load" data-page-node-id="z4tbFUOGwghV5dcRanO6cv"></div></div>
+    <div class="panel col col-l pl2 h250" data-title="馈线状态（6 路）" data-icon="grid" data-page-node-id="7GpNIVnn3xR666TvrcT9oS"><div class="p-bd" id="s4-feed" data-page-node-id="k90LJYnHHqEC0IBV70hpD7"></div></div>
+    <div class="panel col col-l pl3 h250" data-title="异常用能" data-icon="alert" data-page-node-id="jk7vUDx4vzBroQrHKRHNFV"><div class="p-bd" id="s4-abn" data-page-node-id="gqDx5vmiTBJ7TSwz1IeRYV"></div></div>
+    <div class="panel col col-r pl1 h250" data-title="计量体系树" data-icon="layers" data-page-node-id="A3KWH53mw4zh8bYm6shd9r"><div class="p-bd" id="s4-tree" data-page-node-id="O3VvRGs1ixSRcuXHHU92HX"></div></div>
+    <div class="panel col col-r pl2 h250" data-title="需求趋势（近 7 日）" data-icon="chart" data-page-node-id="5Sp32UMoQiDDlvsQ1WZ9rk"><div class="p-bd" id="s4-demand" data-page-node-id="m2UFJRoTOeCUtJKefcQJ5G"></div></div>
+    <div class="panel col col-r pl3 h250" data-title="电能质量（5 项）" data-icon="activity" data-page-node-id="LjIsu9JKhMMZOrLCVNet4L"><div class="p-bd" id="s4-qual" data-page-node-id="VwkfElFHc47ykP636iXaBf"></div></div>
+    <div class="panel sbot" data-title="异常用能 / 能耗排名 / 能耗结构" data-icon="layers" data-page-node-id="shN6XupEgOGVuQ23gztm28"><div class="p-bd" id="s4-bot" data-page-node-id="13IkZWN8Rw327nu1kB0EiK"></div></div>
+  </section>
+
+  <!-- ================= 图5 告警工单 ================= -->
+  <section class="screen" id="scr5" data-page-node-id="MGGt0Fz9YE9oh8SedLNaIV">
+    <div class="shead" data-page-node-id="yLbEKnr1PmhTdXOhkNYOYv">
+      <span class="st" data-page-node-id="BAC7Z6Vg7qW3HESNiF5Kiy">告警工单驾驶舱</span>
+      <span class="ss" data-page-node-id="teMR2IW5ODdmgAo979x8An">ALARM &amp; WORK ORDER</span>
+      <div class="sclock" data-page-node-id="Fc5SqLtxcVlDBsB0kZ93nG"><span class="d gclock-d" data-page-node-id="YuMs1Socran5hIhyCNLCUL">--</span><span class="t gclock-t" data-page-node-id="OZkADYF23Shg3EixiYglHe">--:--:--</span></div>
+    </div>
+    <div class="panel scenter" data-title="近 7 日告警趋势" data-icon="chart" data-page-node-id="MfYb9VSoE8b0nH7IqNdcvc"><div class="p-bd" id="s5-center" data-page-node-id="CI1PH4Cuew8UdfZ8tzKUhf"></div></div>
+    <div class="panel col col-l pl1 h250" data-title="告警中心" data-icon="alert" data-page-node-id="2whRXo6LEpsTXqm4mHsazS"><div class="p-bd" id="s5-over" data-page-node-id="e0tD6TXI9rJ4FdQSGuNdEc"></div></div>
+    <div class="panel col col-l pl2 h250" data-title="实时告警表" data-icon="clipboard" data-page-node-id="Lo6CTc548JJyePFeG4iEbH"><div class="p-bd" id="s5-table" data-page-node-id="PSncKl6mp9SgEdJZYlY5vy"></div></div>
+    <div class="panel col col-l pl3 h250" data-title="等级分布" data-icon="layers" data-page-node-id="BKsp86qQfHKLvZAAl1PPYC"><div class="p-bd" id="s5-level" data-page-node-id="b7CS6tAkwYNUzgPo55jBlC"></div></div>
+    <div class="panel col col-r pl1 h250" data-title="派单处置漏斗" data-icon="chev" data-page-node-id="FNZeADz2ibE3AgFbqQuCbA"><div class="p-bd" id="s5-funnel" data-page-node-id="VvzOShw4WTXEtBSlGf6VjU"></div></div>
+    <div class="panel col col-r pl2 h250" data-title="响应时效" data-icon="clock" data-page-node-id="p2SnHpQvRTmQrYAGd26sc6"><div class="p-bd" id="s5-resp" data-page-node-id="Z0NAk7vrnQ4gJTf2PqFIRX"></div></div>
+    <div class="panel col col-r pl3 h250" data-title="闭环统计" data-icon="check" data-page-node-id="Mh0TkH8KjdDyurq0t4Zqgx"><div class="p-bd" id="s5-closed" data-page-node-id="diFpHfpLgy6QCpvC1sQDLj"></div></div>
+    <div class="panel sbot" data-title="处置流程 / 维护团队" data-icon="users" data-page-node-id="dX5GmZzwawBKvVTLSwaw8Z"><div class="p-bd" id="s5-bot" data-page-node-id="5QkQBrRVk5mcF4me4b9hTd"></div></div>
+  </section>
+
+  <!-- ================= 图6 空间设备运维 ================= -->
+  <section class="screen" id="scr6" data-page-node-id="vZi31g0NDntcIQIHT8ckf5">
+    <div class="shead" data-page-node-id="eHcRiZFHfAE135b71UNxuJ">
+      <span class="st" data-page-node-id="puDTENUHRc2vjsDskXcR0T">空间设备运维驾驶舱</span>
+      <span class="ss" data-page-node-id="3s0lF6s1xUdxVIo9jtK23Z">SPACE &amp; ASSET OPS</span>
+      <div class="sclock" data-page-node-id="9FFG972lPj1nBZnnX8CPCB"><span class="d gclock-d" data-page-node-id="OdJifbxGeTK2k7KR2cNees">--</span><span class="t gclock-t" data-page-node-id="9RHrbveCvOqdkcHRH1FPTd">--:--:--</span></div>
+    </div>
+    <div class="panel scenter" data-title="空间树（10 栋 → 楼层 → 科室）" data-icon="area" data-page-node-id="9qZoXieGFKYh8qbFTZT6nI"><div class="p-bd" id="s6-tree" data-page-node-id="jAXilTdlmH0KzXwEeIKcVB"></div></div>
+    <div class="panel col col-l pl1 h250" data-title="巡检路线" data-icon="pin" data-page-node-id="mF6MX9cJrztLnuGxkTlmgR"><div class="p-bd" id="s6-route" data-page-node-id="IOMET0mYhcyBNXRQBx7xbn"></div></div>
+    <div class="panel col col-l pl2 h250" data-title="资产档案" data-icon="layers" data-page-node-id="mVFAkSKaxhuhbiSO2hg1Wd"><div class="p-bd" id="s6-asset" data-page-node-id="LzZ1nCkDvijYgiwS6lzrcz"></div></div>
+    <div class="panel col col-l pl3 h250" data-title="维护记录" data-icon="clipboard" data-page-node-id="1L9ogHCq8d1BiiagtL1vTU"><div class="p-bd" id="s6-rec" data-page-node-id="LmBtseXpQAa1DNoI99riJV"></div></div>
+    <div class="panel col col-r pl1 h250" data-title="健康状态" data-icon="activity" data-page-node-id="utAl85pakWcyCmFw7m20KU"><div class="p-bd" id="s6-health" data-page-node-id="h5ezBEnCEsGTInyj1bQ3YV"></div></div>
+    <div class="panel col col-r pl2 h250" data-title="资产明细" data-icon="grid" data-page-node-id="jSpf7vsKTKCWG5nRQu8UEs"><div class="p-bd" id="s6-asset2" data-page-node-id="SlDR54BLmuaiPzriYkb9eU"></div></div>
+    <div class="panel col col-r pl3 h250" data-title="实时告警" data-icon="alert" data-page-node-id="ok00rgX7h1EGYEmVIpEJSb"><div class="p-bd" id="s6-alarm" data-page-node-id="p4ac8YNGX57b6IgpxxHkdp"></div></div>
+    <div class="panel sbot" data-title="设备定位 / 实时告警" data-icon="pin" data-page-node-id="vd5eEA2LJZ3RSHkAPDPT3x"><div class="p-bd" id="s6-bot" data-page-node-id="w71kU4AgsSQtzwvwCuJGMe"></div></div>
+  </section>
+
+  <!-- ================= 图7 权威建筑面积表 ================= -->
+  <section class="screen" id="scr7" data-page-node-id="GjBcWJ2gMBUEOBLIBY5NOX">
+    <div class="shead" data-page-node-id="NrEoE9keZS1ZWflE87Hpxn">
+      <span class="st" data-page-node-id="w6O1Aws9HqzXTfveV34iU8">权威建筑面积表</span>
+      <span class="ss" data-page-node-id="LaRibB4B0ywbjvMkyT7HIR">AUTHORITATIVE GROSS AREA</span>
+      <div class="sclock" data-page-node-id="9IoztaknBcC8jSIOF9FbJf"><span class="d gclock-d" data-page-node-id="4ebgITADklfTZ1yLBDvkbu">--</span><span class="t gclock-t" data-page-node-id="2A7ExUkdr8rJucvX9GDii5">--:--:--</span></div>
+    </div>
+    <div class="t7wrap" data-page-node-id="scMgGeo8wH6rWj9RDbKlkM"><table class="t7" id="s7-table" data-page-node-id="VOr69EjkBCLjixDeOLqAkG"></table></div>
+  </section>
+
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/GLTFLoader.js"></script>
+<script>
+"use strict";
+/* ============================================================
+   0. 颜色 token（§2）
+   ============================================================ */
+var C = {
+  cyan:"#35C5FF", blue:"#2E8BFF", green:"#34D98A", amber:"#FFB03A", red:"#FF5252",
+  weak:"#62809C", t1:"#EAF6FF", t2:"#E8F4FF", t3:"#9FC3E0"
+};
+
+/* ============================================================
+   1. 真实数据（禁止改写）
+   ============================================================ */
+// 10 栋楼：名称 / 层数 / 建筑面积(m²,null=待核) / 设备台账 [SPL,CHILLER,VRF,HP,PUMP,CT]
+var BUILDINGS = [
+  {id:"B01", no:1,  name:"1号楼(120急救中心)",       short:"120急救中心",   floors:6,  area:null,      dev:[66,2,2,1,2,2]},
+  {id:"B02", no:2,  name:"2号楼(门诊大楼)",          short:"门诊大楼",      floors:6,  area:15921.46,  dev:[62,0,2,0,0,0]},
+  {id:"B03", no:3,  name:"3号楼(住院大楼)",          short:"住院大楼",      floors:12, area:45953.02,  dev:[690,2,0,6,0,0]},
+  {id:"B04", no:4,  name:"4号楼(妇产儿科大楼)",      short:"妇产儿科大楼",  floors:13, area:25380.00,  dev:[236,4,23,4,3,0]},
+  {id:"B05", no:5,  name:"5号楼(张襯大楼)",          short:"张襯大楼",      floors:9,  area:7769.84,   dev:[126,0,8,0,0,0]},
+  {id:"B06", no:6,  name:"6号楼(后勤楼)",            short:"后勤楼",        floors:2,  area:4430.90,   dev:[62,0,0,0,0,0]},
+  {id:"B07", no:7,  name:"7号楼(药剂楼)",            short:"药剂楼",        floors:5,  area:3738.02,   dev:[75,2,0,0,3,0]},
+  {id:"B08", no:8,  name:"8号楼(余锦炯大楼、放疗楼)",short:"余锦炯大楼",    floors:7,  area:11583.50,  dev:[73,0,0,2,0,0]},
+  {id:"B09", no:9,  name:"9号楼(综合大楼)",          short:"综合大楼",      floors:10, area:null,      dev:[200,0,0,4,0,0]},
+  {id:"B10", no:10, name:"10号楼(宿舍楼)",           short:"宿舍楼",        floors:6,  area:2468.48,   dev:[36,0,0,3,0,0]}
+];
+var DEV_KEYS = ["SPL","CHILLER","VRF","HP","PUMP","CT"];
+var DEV_CN   = {SPL:"分体机", CHILLER:"螺杆机", VRF:"多联机", HP:"热泵", PUMP:"水泵", CT:"冷却塔"};
+var AREA_TOTAL = 117245.22, AREA_VERIFIED = 8;  // 已核 8 栋合计
+var DEV_TOTAL = 1701;
+var DEV_CLASSES = [
+  {cn:"分体机",   n:1626, c:C.cyan},
+  {cn:"多联机",   n:35,   c:C.blue},
+  {cn:"热泵",     n:20,   c:C.green},
+  {cn:"螺杆机",   n:10,   c:C.amber},
+  {cn:"风冷模块", n:8,    c:"#5FE3C0"},
+  {cn:"水泵",     n:8,    c:C.red},
+  {cn:"冷却塔",   n:2,    c:"#8FA6BE"}
+];
+
+/* ---------------- MOCK(PDF) 示意值 ---------------- */
+var MOCK = {
+  online:1667, offline:26, alarm:8,
+  power:18542, water:1257, cooling:6320,
+  alarmUrgent:12, alarmMajor:36, alarmMinor:98,
+  woTodo:28, woDoing:56, woCheck:18, woDone:326,
+  beds:1200,
+  weather:{txt:"多云", temp:26, wind:"东南风 2级", hum:78},
+  days:["08-30","08-31","09-01","09-02","09-03","09-04","09-05"],
+  power7:  [17200,16500,17900,16800,18400,17600,18542],
+  water7:  [1180,1240,1210,1300,1257,1190,1268],
+  cool7:   [5800,6100,5950,6400,6320,6050,6250],
+  alarmU7: [2,3,1,4,2,3,2],
+  alarmM7: [6,5,4,7,5,4,5],
+  alarmN7: [13,15,11,18,14,12,15],
+  woNew7:  [42,38,51,47,44,39,46],
+  woDone7: [36,41,44,49,52,45,48],
+  woOver7: [6,4,8,5,7,6,5],
+  runDays:256, sysCount:62, patrolPts:1245, patrolRate:98, woRate:92, carbon:8.65
+};
+
+/* ---------------- 图2-7 MOCK(PDF) 示意值 ---------------- */
+// 图2 空调与能源
+var S2 = {
+  euc:158.6, cop:4.82, total:18542,        // MOCK(PDF)
+  link:[{nm:"冷机",n:2,load:78,st:"run"},{nm:"冷却塔",n:2,load:60,st:"run"},
+        {nm:"冷冻水泵",n:8,load:65,st:"run"},{nm:"热泵",n:20,load:70,st:"run"}],
+  zones:[26,25,24,27,28,26,25,24, 23,24,25,26,27,25,24,23, 22,23,24,25,26,24,23,22,
+         21,22,23,24,25,23,22,21, 20,21,22,23,24,22,21,20], // 8x4 分区温度℃
+  faults:[{t:"3号楼 冷机1# 出水温度偏高",lv:"m"},{t:"4号楼 VRF 通讯中断",lv:"u"},
+          {t:"8号楼 冷却塔风扇变频故障",lv:"m"},{t:"5号楼 分体机 E5 告警",lv:"n"}],
+  strategy:["室外温度联动冷水机组台数","夜间自然冷却优先策略","新风机组焓值控制","非高峰时段错峰蓄冷"],
+  invCtrl:"逆控已授权 · 2 路下发成功",
+  share:[{nm:"空调系统",v:42,c:C.cyan},{nm:"照明插座",v:23,c:C.blue},
+         {nm:"动力设备",v:21,c:C.amber},{nm:"其他",v:14,c:C.weak}],
+  rank:[{nm:"3号楼",v:8920},{nm:"4号楼",v:6210},{nm:"8号楼",v:4180},{nm:"5号楼",v:3120},
+         {nm:"2号楼",v:2860},{nm:"7号楼",v:1640},{nm:"6号楼",v:980},{nm:"10号楼",v:620}], // MOCK(PDF)
+  inWater:[7.8,7.6,7.9,8.1,7.7,7.5,7.8],   // 进水温度℃
+  outWater:[12.4,12.1,12.6,12.9,12.3,12.0,12.5], // 出水温度℃
+  health:[{n:"冷机A",v:"96",s:"良好",c:C.green},{n:"冷机B",v:"92",s:"良好",c:C.green},
+          {n:"冷却塔1",v:"88",s:"正常",c:C.green},{n:"冷冻泵1",v:"90",s:"正常",c:C.green},
+          {n:"冷冻泵2",v:"79",s:"关注",c:C.amber},{n:"热泵群",v:"85",s:"正常",c:C.green}]
+};
+// 图3 电梯
+var S3 = {
+  total:32, run:28, fault:2, maint:2,         // MOCK(PDF)
+  elevators:[{id:"DT-01",b:"3号楼",f:8,st:"运行"},{id:"DT-02",b:"3号楼",f:3,st:"运行"},
+             {id:"DT-03",b:"3号楼",f:11,st:"运行"},{id:"DT-04",b:"4号楼",f:5,st:"故障"},
+             {id:"DT-05",b:"4号楼",f:9,st:"运行"},{id:"DT-06",b:"4号楼",f:2,st:"维保"},
+             {id:"DT-07",b:"2号楼",f:4,st:"运行"},{id:"DT-08",b:"5号楼",f:6,st:"运行"}],
+  faults:[{t:"4号楼 DT-04 门锁异常",lv:"u"},{t:"3号楼 DT-03 平层偏差",lv:"m"}],
+  shafts:[{id:"DT-04",f:5,mx:13},{id:"DT-03",f:11,mx:13},{id:"DT-01",f:8,mx:12},{id:"DT-06",f:2,mx:13}],
+  maintain:[{t:"4号楼 DT-04 半月保",d:"09-08"},{t:"3号楼 DT-01 季度保",d:"09-12"},
+            {t:"2号楼 DT-07 年度保",d:"09-20"},{t:"5号楼 DT-08 半月保",d:"09-10"}],
+  runRate:96.9, resp:5, patrol:92,            // MOCK(PDF)
+  woNew:[6,4,7,5,6,4,5], woDone:[5,4,6,5,6,4,5], woOver:[1,0,1,1,0,1,0],
+  stat:[{k:"运行统计",v:"96.9",u:"%",c:"green"},{k:"平均响应",v:"5",u:"min",c:"cyan"},
+        {k:"巡检完成",v:"92",u:"%",c:"blue"},{k:"本月工单",v:"38",u:"单",c:"amber"}]
+};
+// 图4 供配电
+var S4 = {
+  lines:2, trans:2,                           // MOCK(PDF)
+  transLoad:[{nm:"1#变压器",v:58},{nm:"2#变压器",v:66}], // %
+  feeders:[{nm:"住院楼Ⅰ段",st:"ok"},{nm:"住院楼Ⅱ段",st:"ok"},{nm:"门诊楼段",st:"ok"},
+           {nm:"妇儿楼段",st:"warn"},{nm:"后勤段",st:"ok"},{nm:"放疗楼段",st:"ok"}],
+  abnormal:[{t:"妇儿楼段 夜间尖峰超容",lv:"m"},{t:"放疗楼 瞬时冲击负荷",lv:"n"}],
+  tree:[{nm:"院区总计量",v:"1,854 kWh",ch:[{nm:"动力支路",v:"982 kWh",ch:[{nm:"空调",v:"620 kWh"},{nm:"医疗",v:"362 kWh"}]},
+        {nm:"照明支路",v:"512 kWh",ch:[{nm:"公共照明",v:"310 kWh"},{nm:"应急照明",v:"202 kWh"}]},
+        {nm:"特殊用电",v:"360 kWh",ch:[{nm:"手术室",v:"240 kWh"},{nm:"ICU",v:"120 kWh"}]}]}],
+  demand:[1680,1540,1720,1610,1850,1760,1854], // MOCK(PDF) 近7日需求 kWh
+  quality:[{nm:"电压偏差",v:2.1,u:"%",max:5,st:"ok"},{nm:"频率偏差",v:0.03,u:"Hz",max:0.2,st:"ok"},
+           {nm:"谐波畸变",v:3.2,u:"%",max:5,st:"ok"},{nm:"三相不平衡",v:1.8,u:"%",max:4,st:"ok"},
+           {nm:"功率因数",v:0.96,u:"",max:1,st:"ok"}],
+  rank:[{nm:"3号楼",v:8920},{nm:"4号楼",v:6210},{nm:"8号楼",v:4180},{nm:"5号楼",v:3120},
+        {nm:"2号楼",v:2860}],
+  structure:[{nm:"空调",v:48,c:C.cyan},{nm:"动力",v:27,c:C.amber},{nm:"照明",v:15,c:C.blue},
+             {nm:"医疗",v:10,c:C.green}]
+};
+// 图5 告警工单
+var S5 = {
+  urgent:24, major:38, minor:56,              // MOCK(PDF)
+  alarms:[{t:"3号楼 冷机1# 高温",lv:"u",tm:"09-05 14:22"},
+          {t:"4号楼 DT-04 门锁异常",lv:"u",tm:"09-05 11:08"},
+          {t:"5号楼 VRF E5",lv:"m",tm:"09-05 09:41"},
+          {t:"8号楼 冷却塔风扇",lv:"m",tm:"09-04 22:15"},
+          {t:"2号楼 照明回路",lv:"n",tm:"09-04 18:33"}],
+  levelDist:118,                              // MOCK(PDF)
+  funnel:[{nm:"告警产生",v:118},{nm:"自动派单",v:110},{nm:"现场响应",v:98},
+          {nm:"处置中",v:82},{nm:"闭环",v:76}],
+  resp:[{nm:"<5min",v:62},{nm:"5-15min",v:34},{nm:"15-30min",v:18},{nm:">30min",v:4}],
+  closedNew:[42,38,51,47,44,39,46], closedDone:[36,41,44,49,52,45,48],
+  steps:["告警接入","智能派单","现场处置","审核验收","闭环归档"],
+  team:48                                    // MOCK(PDF)
+};
+// 图6 空间设备运维
+var S6 = {
+  tree:BUILDINGS.map(function(b){
+    return {nm:b.no+"号楼 "+b.short, f:b.floors,
+      ch:Array.from({length:Math.min(b.floors,4)},function(_,i){
+        return {nm:(b.floors-i)+"F", rm:["护士站","病房","设备间","诊室","药房","CT室","会议室"][i%7]};
+      })};
+  }),
+  routes:[{t:"1号楼→3号楼 急诊巡检",d:"每日 2 次"},{t:"3号楼 住院层巡检",d:"每日 3 次"},
+          {t:"4号楼 妇儿层巡检",d:"每日 2 次"},{t:"8号楼 放疗层巡检",d:"每周 5 次"}],
+  assets:{total:1701, located:1685, rate:99}, // MOCK(PDF)
+  health:92,                                 // MOCK(PDF)
+  records:[{t:"3号楼 冷机保养",d:"09-03"},{t:"4号楼 DT-04 维修",d:"09-05"},
+           {t:"5号楼 VRF 加氟",d:"09-01"},{t:"8号楼 冷却塔清洗",d:"08-29"}],
+  locate:[{nm:"分体机",v:1626,c:C.cyan},{nm:"多联机",v:35,c:C.blue},{nm:"热泵",v:20,c:C.green},
+          {nm:"螺杆机",v:10,c:C.amber},{nm:"风冷模块",v:8,c:"#5FE3C0"},{nm:"水泵",v:8,c:C.red},{nm:"冷却塔",v:2,c:"#8FA6BE"}],
+  alarms:[{t:"3号楼 冷机1# 高温",lv:"u"},{t:"4号楼 DT-04 门锁",lv:"u"},{t:"5号楼 VRF E5",lv:"m"}]
+};
+
+/* ============================================================
+   2. 工具
+   ============================================================ */
+function f(n){return Number(n).toLocaleString("en-US");}
+function f2(n){return Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function $(id){return document.getElementById(id);}
+
+// lucide 风线条图标（stroke 2px round，viewBox 24）
+var ICON = {
+  building:'<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-5h4v5"/><path d="M9 9h.01"/><path d="M15 9h.01"/>',
+  cpu:'<rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
+  zap:'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>',
+  alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  clipboard:'<rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/>',
+  layers:'<path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>',
+  chart:'<path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-6"/>',
+  cloud:'<path d="M18 18H8a4 4 0 0 1-.4-7.98A5.5 5.5 0 0 1 19 11.5a3.25 3.25 0 0 1-1 6.5z"/>',
+  wind:'<path d="M3 8h9a3 3 0 1 0-3-3"/><path d="M3 16h13a3 3 0 1 1-3 3"/><path d="M3 12h18"/>',
+  drop:'<path d="M12 2.7 6.6 8.1a7 7 0 1 0 10.8 0z"/>',
+  thermometer:'<path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/>',
+  bed:'<path d="M3 18V8"/><path d="M3 12h18v6"/><path d="M7 12V9h6a3 3 0 0 1 3 3"/><circle cx="17" cy="9" r="2"/>',
+  users:'<path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 20v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  area:'<path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  check:'<path d="M21.8 10A10 10 0 1 1 17 3.3"/><path d="m9 11 3 3L22 4"/>',
+  leaf:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/>',
+  chev:'<path d="m9 18 6-6-6-6"/>',
+  activity:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  bulb:'<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/>',
+  gauge:'<path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M12 12 8 8"/><path d="M3 18a9 9 0 1 1 18 0"/>'};
+function ic(n,s,c){
+  s = s || 18;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+(c||"currentColor")+
+         '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICON[n]||"")+'</svg>';
+}
+
+/* ============================================================
+   3. 面板 Chrome 注入
+   ============================================================ */
+function buildChrome(){
+  var ps = document.querySelectorAll("#stage .panel");
+  for(var i=0;i<ps.length;i++){
+    var p = ps[i];
+    var title = p.getAttribute("data-title") || "";
+    var icon  = p.getAttribute("data-icon") || "grid";
+    if(title){
+      var hd = document.createElement("div");
+      hd.className = "p-hd";
+      hd.innerHTML =
+        '<span class="p-bar"></span>' +
+        '<span class="p-title">'+esc(title)+'</span>' +
+        '<span class="p-chev">'+ic("chev",14)+'</span>';
+      p.insertBefore(hd, p.firstChild);
+    }
+    var ks = ["tl","tr","bl","br"];
+    for(var j=0;j<4;j++){
+      var c = document.createElement("span");
+      c.className = "c " + ks[j];
+      p.appendChild(c);
+    }
+  }
+}
+
+/* ============================================================
+   4. SVG 图表生成（无 xmlns，避免任何 http 引用）
+   ============================================================ */
+// 多序列折线
+function lineChart(w,h,series,labels){
+  var pl=30,pr=10,pt=12,pb=20;
+  var iw=w-pl-pr, ih=h-pt-pb, n=series[0].data.length;
+  var s='<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">';
+  for(var g=0;g<=3;g++){
+    var y=pt+ih*g/3;
+    s+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(pl+iw)+'" y2="'+y.toFixed(1)+
+       '" stroke="rgba(53,197,255,'+(g===3?'.22':'.07')+')" stroke-width="1"/>';
+  }
+  series.forEach(function(se){
+    var mx=Math.max.apply(null,se.data)*1.14, mn=0;
+    var pts=[];
+    for(var i=0;i<n;i++){
+      var x=pl+iw*i/(n-1);
+      var y=pt+ih-(se.data[i]-mn)/(mx-mn)*ih;
+      pts.push([x,y]);
+    }
+    var d=pts.map(function(p,k){return (k?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1);}).join(" ");
+    s+='<path d="'+d+'" fill="none" stroke="'+se.color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    var last=pts[n-1];
+    s+='<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="3" fill="'+se.color+'" stroke="#04101E" stroke-width="1.5"/>';
+  });
+  s+='<line x1="'+pl+'" y1="'+(pt+ih)+'" x2="'+(pl+iw)+'" y2="'+(pt+ih)+'" stroke="rgba(53,197,255,.22)"/>';
+  for(var i=0;i<n;i++){
+    var x=pl+iw*i/(n-1);
+    s+='<text x="'+x.toFixed(1)+'" y="'+(h-6)+'" fill="#62809C" font-size="10" text-anchor="middle" font-family="inherit">'+labels[i]+'</text>';
+  }
+  s+='</svg>';
+  return s;
+}
+// 堆叠柱
+function stackChart(w,h,cats,series){
+  var pl=30,pr=10,pt=12,pb=20;
+  var iw=w-pl-pr, ih=h-pt-pb, n=cats.length;
+  var tot=[];
+  for(var i=0;i<n;i++){var t=0; series.forEach(function(se){t+=se.data[i];}); tot.push(t);}
+  var mx=Math.max.apply(null,tot)*1.12;
+  var s='<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">';
+  for(var g=0;g<=3;g++){
+    var y=pt+ih*g/3;
+    s+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(pl+iw)+'" y2="'+y.toFixed(1)+
+       '" stroke="rgba(53,197,255,'+(g===3?'.22':'.07')+')"/>';
+    s+='<text x="'+(pl-6)+'" y="'+(y+3).toFixed(1)+'" fill="#62809C" font-size="9" text-anchor="end" font-family="inherit">'+
+       Math.round(mx*(3-g)/3)+'</text>';
+  }
+  var slot=iw/n, bw=Math.min(26,slot*0.56);
+  for(var i=0;i<n;i++){
+    var x=pl+slot*i+(slot-bw)/2, acc=0;
+    series.forEach(function(se){
+      var hh=se.data[i]/mx*ih;
+      var y=pt+ih-(acc+hh);
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,hh).toFixed(1)+
+         '" fill="'+se.color+'" opacity=".9"/>';
+      acc+=hh;
+    });
+    s+='<text x="'+(pl+slot*i+slot/2).toFixed(1)+'" y="'+(h-6)+'" fill="#62809C" font-size="10" text-anchor="middle" font-family="inherit">'+cats[i]+'</text>';
+  }
+  s+='</svg>';
+  return s;
+}
+// 环形图
+function donut(size,r,sw,segs){
+  var cx=size/2, cy=size/2, circ=2*Math.PI*r, off=0;
+  var s='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(30,78,126,.45)" stroke-width="'+sw+'"/>';
+  segs.forEach(function(g){
+    var len=g.v/g.total*circ;
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+g.c+'" stroke-width="'+sw+
+       '" stroke-linecap="butt" stroke-dasharray="'+len.toFixed(2)+' '+circ.toFixed(2)+
+       '" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
+    off+=len;
+  });
+  s+='</svg>';
+  return s;
+}
+// 横向条形（带名称 / 数值）
+function hbarChart(w,h,items){
+  var pl=74,pr=52,pt=8,pb=6;
+  var ih=h-pt-pb, n=items.length, rh=ih/n;
+  var mx=0; items.forEach(function(it){var m=it.max||it.val; if(m>mx)mx=m;});
+  var s='<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">';
+  items.forEach(function(it,i){
+    var y=pt+rh*i+rh/2;
+    var bw=Math.max(2,(it.val/mx)*(w-pl-pr));
+    s+='<text x="'+(pl-8)+'" y="'+(y+4).toFixed(1)+'" fill="#9FC3E0" font-size="12" text-anchor="end" font-family="inherit">'+esc(it.nm)+'</text>';
+    s+='<rect x="'+pl+'" y="'+(y-rh*0.28).toFixed(1)+'" width="'+(w-pl-pr)+'" height="'+(rh*0.56).toFixed(1)+'" rx="3" fill="rgba(30,78,126,.35)"/>';
+    s+='<rect x="'+pl+'" y="'+(y-rh*0.28).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(rh*0.56).toFixed(1)+'" rx="3" fill="'+it.color+'"/>';
+    s+='<text x="'+(pl+bw+8).toFixed(1)+'" y="'+(y+4).toFixed(1)+'" fill="#E8F4FF" font-size="12" font-weight="700" font-family="inherit">'+it.val+(it.unit||"")+'</text>';
+  });
+  s+='</svg>';
+  return s;
+}
+// 颜色插值（温度热力）
+function hex2rgb(h){h=h.replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+function rgb2hex(r){return '#'+r.map(function(v){var s=Math.round(v).toString(16);return s.length<2?'0'+s:s;}).join('');}
+function mix(c1,c2,t){var a=hex2rgb(c1),b=hex2rgb(c2);return rgb2hex([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]);}
+function tempColor(t){var x=(t-18)/(30-18);x=Math.max(0,Math.min(1,x));if(x<0.5)return mix('#2E8BFF','#FFB03A',x/0.5);return mix('#FFB03A','#FF5252',(x-0.5)/0.5);}
+
+/* ============================================================
+   5. 图1：天气 + 时钟 + 导航 + 楼层 + 场景
+   ============================================================ */
+function buildWeather(){
+  var w = MOCK.weather; // MOCK(PDF)
+  $("wx").innerHTML =
+    '<span class="wx">'+ic("cloud",20,C.cyan)+'<span>'+esc(w.txt)+'</span>'+
+    '<span class="v">'+w.temp+'℃</span></span>'+
+    '<span class="tb-sep"></span>'+
+    '<span class="wx">'+ic("wind",18,C.cyan)+'<span class="s">'+esc(w.wind)+'</span></span>'+
+    '<span class="tb-sep"></span>'+
+    '<span class="wx">'+ic("drop",18,C.cyan)+'<span class="s">湿度 '+w.hum+'%</span></span>';
+}
+var WD=["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+function pad(n){return n<10?"0"+n:""+n;}
+function tick(){
+  var d=new Date();
+  var dateStr = d.getFullYear()+"年"+pad(d.getMonth()+1)+"月"+pad(d.getDate())+"日 "+WD[d.getDay()];
+  var timeStr = pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  $("clk-d").textContent = dateStr;
+  $("clk-t").textContent = timeStr;
+  var gcs=document.querySelectorAll(".gclock-d"); for(var i=0;i<gcs.length;i++) gcs[i].textContent=dateStr;
+  var gt=document.querySelectorAll(".gclock-t"); for(var j=0;j<gt.length;j++) gt[j].textContent=timeStr;
+}
+
+var selBuilding = 3; // 默认选中 4号楼(妇产儿科) → 中央 3D 区显示真实 F1 模型
+function buildNav(){
+  var box=$("w_building_nav"), h="";
+  BUILDINGS.forEach(function(b,i){
+    h+='<div class="btab'+(i===selBuilding?" on":"")+'" data-i="'+i+'">'+
+       '<span>'+b.no+'号楼</span><span class="idx">'+b.floors+'F</span></div>';
+  });
+  box.innerHTML=h;
+  var tabs=box.querySelectorAll(".btab");
+  for(var i=0;i<tabs.length;i++){
+    (function(t,idx){
+      t.addEventListener("mouseenter",function(){showTip(idx);});
+      t.addEventListener("mouseleave",function(){hideTip();});
+      t.addEventListener("click",function(){
+        selBuilding=idx;
+        for(var k=0;k<tabs.length;k++) tabs[k].classList.toggle("on",k===idx);
+        renderFloors(); renderScene(); showTip(idx); modelLink(idx);
+      });
+    })(tabs[i],i);
+  }
+}
+function showTip(i){
+  var b=BUILDINGS[i], tip=$("bldTip"), tab=$("w_building_nav").children[i];
+  var sum=0; b.dev.forEach(function(v){sum+=v;});
+  var areaTxt = (b.area===null) ? '<span style="color:#FFB03A">待核</span>'
+                                : f2(b.area)+' m² <span style="color:#34D98A">已核</span>';
+  var dev="";
+  DEV_KEYS.forEach(function(k,j){ dev+='<div>'+k+' <b>'+b.dev[j]+'</b></div>'; });
+  tip.innerHTML =
+    '<div class="n">'+esc(b.name)+'</div>'+
+    '<div class="hr"></div>'+
+    '<div class="r"><span>建筑层数</span><span>'+b.floors+' 层</span></div>'+
+    '<div class="r"><span>建筑面积</span><span>'+areaTxt+'</span></div>'+
+    '<div class="r"><span>设备台账</span><span>'+sum+' 台</span></div>'+
+    '<div class="hr"></div>'+
+    '<div class="cap">设备分类（台）</div>'+
+    '<div class="dev">'+dev+'</div>'+
+    '<div class="tot">合计 <b>'+sum+'</b> 台 / '+esc(b.id)+'</div>';
+  tip.style.display="block";
+  var left = 40 + tab.offsetLeft + tab.offsetWidth/2 - 140;
+  left = Math.max(40, Math.min(1880-280, left));
+  tip.style.left = left+"px";
+  tip.style.top = "188px";
+}
+function hideTip(){$("bldTip").style.display="none";}
+
+var FLOOR_PER_COL = 8;
+var selFloor = 1;
+function floorColumns(n){
+  var desc=[], i;
+  for(i=n;i>=1;i--) desc.push(i);
+  var cols=[];
+  for(i=0;i<desc.length;i+=FLOOR_PER_COL) cols.push(desc.slice(i,i+FLOOR_PER_COL));
+  return cols;
+}
+function renderFloors(){
+  var b=BUILDINGS[selBuilding], body=$("floor-body"), h="";
+  if(selFloor>b.floors) selFloor=b.floors;
+  for(var n=b.floors;n>=1;n--){
+    h+='<div class="fl'+(n===selFloor?" on":"")+'" data-f="'+n+'">F'+n+'</div>';
+  }
+  body.innerHTML=h;
+  var items=body.querySelectorAll(".fl");
+  for(var j=0;j<items.length;j++){
+    (function(el){
+      var n=parseInt(el.getAttribute("data-f"),10);
+      el.addEventListener("click",function(){
+        selFloor=n;
+        for(var k=0;k<items.length;k++){
+          items[k].classList.toggle("on", parseInt(items[k].getAttribute("data-f"),10)===n);
+        }
+      });
+    })(items[j]);
+  }
+}
+
+var BOX = {
+  1:{x:55, y:472, w:104, h:148, row:"front"},
+  2:{x:176,y:472, w:136, h:148, row:"front"},
+  3:{x:95, y:224, w:148, h:256, row:"back"},
+  4:{x:258,y:206, w:126, h:274, row:"back"},
+  5:{x:658,y:278, w:104, h:202, row:"back"},
+  6:{x:443,y:544, w:104, h:76,  row:"front"},
+  7:{x:330,y:490, w:96,  h:130, row:"front"},
+  8:{x:534,y:314, w:108, h:166, row:"back"},
+  9:{x:400,y:260, w:118, h:220, row:"back"},
+  10:{x:610,y:472,w:92,  h:148, row:"front"}
+};
+function bubbleW(txt){
+  var w=0;
+  for(var i=0;i<txt.length;i++){ var ch=txt.charCodeAt(i); w += (ch>255 ? 11 : 6.2); }
+  return Math.round(w)+18;
+}
+/* ============================================================
+   5. 中央 3D 区·院区 10 栋楼场景（程序化生成）
+   ============================================================ */
+function renderScene(){
+  if(!model3d.ready) initCampus();
+  else updateView(selBuilding);
+}
+var model3d = { group:null, blds:[], ready:false, spin:0.006, scene:null, camera:null, renderer:null, f1model:null, f1spin:null, f1grid:null, f1ready:false, f1error:false, campusCam:null, lastInteract:0 };
+var LINK_COLORS = ["#35C5FF","#2E8BFF","#34D98A","#FFB03A","#FF5252","#8FA6BE","#5FE3C0","#7AA8FF","#FF8A5B","#9FC3E0"];
+function initCampus(){
+  var canvas=$("scene-canvas");
+  if(!canvas || !window.THREE){ return; }
+  var renderer;
+  try{
+    renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
+  }catch(e){ return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.setClearColor(0x06182E,1);
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(45,1,0.1,5000);
+  scene.add(new THREE.AmbientLight(0xffffff,0.85));
+  var dl=new THREE.DirectionalLight(0xffffff,0.95); dl.position.set(60,120,80); scene.add(dl);
+  var dl2=new THREE.DirectionalLight(0x88bbff,0.45); dl2.position.set(-80,40,-60); scene.add(dl2);
+  var grp=new THREE.Group(); scene.add(grp);
+  var cols=5, gapX=42, gapZ=58, bw=24, bd=24;
+  var box=new THREE.Box3();
+  for(var i=0;i<BUILDINGS.length;i++){
+    var b=BUILDINGS[i];
+    var h=8 + b.floors*4.0;
+    var col=i%cols, row=Math.floor(i/cols);
+    var x=(col-(cols-1)/2)*gapX;
+    var z=(row-0.5)*gapZ;
+    var geo=new THREE.BoxGeometry(bw,h,bd);
+    var base=new THREE.Color(LINK_COLORS[i%LINK_COLORS.length]);
+    var mat=new THREE.MeshStandardMaterial({color:0x16324f, emissive:base, emissiveIntensity:0.12, metalness:0.1, roughness:0.85});
+    var mesh=new THREE.Mesh(geo,mat);
+    mesh.position.set(x, h/2, z);
+    mesh.userData.index=i;
+    grp.add(mesh);
+    model3d.blds.push({mesh:mesh, base:base});
+    box.expandByObject(mesh);
+    var sp=makeBldLabel(b.no+"号楼");
+    sp.position.set(x, h+10, z);
+    grp.add(sp);
+    box.expandByObject(sp);
+  }
+  var center=box.getCenter(new THREE.Vector3());
+  var bsz=box.getSize(new THREE.Vector3());
+  var maxDim=Math.max(bsz.x,bsz.y,bsz.z);
+  var dist=maxDim/(2*Math.tan((camera.fov/2)*Math.PI/180))*1.45;
+  camera.position.set(center.x, center.y+dist*0.55, center.z+dist);
+  camera.lookAt(center);
+  function size(){
+    var W=canvas.clientWidth||540, H=canvas.clientHeight||732;
+    renderer.setSize(W,H,false);
+    camera.aspect=W/Math.max(1,H); camera.updateProjectionMatrix();
+  }
+  size(); setTimeout(size,80);
+  model3d.group=grp; model3d.ready=true;
+  model3d.scene=scene; model3d.camera=camera; model3d.renderer=renderer;
+  model3d.campusCam={pos:camera.position.clone(), look:center.clone()};
+  // 真实 妇科1层 建筑外壳（仅 4 号楼选中时显示，其余楼显示程序化院区）
+  try{
+    var gltfLoader=new THREE.GLTFLoader();
+    gltfLoader.load("models/fc-f1.glb", function(gltf){
+      var m=gltf.scene;
+      m.rotation.x=-Math.PI/2;                 // Z-up → Y-up
+      m.updateMatrixWorld(true);
+      var bb=new THREE.Box3().setFromObject(m);
+      var c=bb.getCenter(new THREE.Vector3());
+      m.position.x-=c.x; m.position.z-=c.z; m.position.y-=bb.min.y;
+      m.visible=false;
+      var spin=new THREE.Group(); spin.add(m); scene.add(spin);  // 自转外壳组
+      model3d.f1model=m; model3d.f1spin=spin; model3d.f1ready=true;
+      // 参考 demo/floor-f01：模型下方叠加地面网格（随 F1 显隐）
+      var fp=Math.max(bb.max.x-bb.min.x, bb.max.z-bb.min.z);
+      var gsize=Math.max(80, Math.round(fp*1.8));
+      var grid=new THREE.GridHelper(gsize, Math.max(8,Math.round(gsize/12)), 0x2E6FA6, 0x133458);
+      grid.position.y=0.02; grid.visible=false; scene.add(grid);
+      model3d.f1grid=grid;
+      updateView(selBuilding);
+      refreshF1Loading();
+    }, undefined, function(){
+      model3d.f1error=true; refreshF1Loading();
+    });
+  }catch(e){ model3d.f1error=true; refreshF1Loading(); }
+  updateView(selBuilding);
+  // 视角控制：鼠标拖动旋转、滚轮缩放、触摸单指旋转 —— 解决“模型不能用鼠标移动”
+  var sceneEl=$("w_scene"), drag=null;
+  var orbitPivot=new THREE.Vector3();
+  function orbitPivotOf(){
+    if(model3d.f1model && model3d.f1model.visible){
+      model3d.f1model.updateMatrixWorld(true);
+      return new THREE.Box3().setFromObject(model3d.f1model).getCenter(new THREE.Vector3());
+    }
+    if(model3d.campusCam){ orbitPivot.copy(model3d.campusCam.look); return orbitPivot; }
+    return orbitPivot.set(0,0,0);
+  }
+  function orbitSpin(dx,dy){
+    var cam=model3d.camera, pv=orbitPivotOf();
+    var off=cam.position.clone().sub(pv);
+    var sph=new THREE.Spherical().setFromVector3(off);
+    sph.theta-=dx*0.0055; sph.phi-=dy*0.0055;
+    sph.phi=Math.max(0.06,Math.min(Math.PI-0.06,sph.phi));
+    off.setFromSpherical(sph);
+    cam.position.copy(pv).add(off);
+    cam.lookAt(pv);
+  }
+  function orbitZoom(dy){
+    var cam=model3d.camera, pv=orbitPivotOf();
+    var off=cam.position.clone().sub(pv), d0=off.length()||1;
+    var d1=Math.max(20,Math.min(1600,d0*Math.exp(dy*0.0013)));
+    off.multiplyScalar(d1/d0);
+    cam.position.copy(pv).add(off);
+    cam.lookAt(pv);
+  }
+  function onDown(x,y){ drag={x:x,y:y}; model3d.lastInteract=Date.now(); orbitPivotOf(); }
+  function onMove(x,y){
+    if(!drag) return;
+    orbitSpin(x-drag.x, y-drag.y);
+    drag={x:x,y:y};
+    model3d.lastInteract=Date.now();
+  }
+  function onUp(){ drag=null; }
+  sceneEl.addEventListener("pointerdown",function(e){ e.preventDefault(); onDown(e.clientX,e.clientY); sceneEl.setPointerCapture&&sceneEl.setPointerCapture(e.pointerId); });
+  sceneEl.addEventListener("pointermove",function(e){ onMove(e.clientX,e.clientY); });
+  sceneEl.addEventListener("pointerup",onUp);
+  sceneEl.addEventListener("pointercancel",onUp);
+  sceneEl.addEventListener("wheel",function(e){ e.preventDefault(); orbitZoom((e.deltaY>0?1:-1)*Math.min(48,Math.abs(e.deltaY))); },{passive:false});
+  sceneEl.addEventListener("touchstart",function(e){ if(e.touches.length===1) onDown(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
+  sceneEl.addEventListener("touchmove",function(e){ if(drag&&e.touches.length===1) onMove(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
+  sceneEl.addEventListener("touchend",onUp,{passive:true});
+  // 模型自动缓转仅在用户空闲(>1.2s)时进行，操作期间保持视角稳定
+  (function animate(){
+    requestAnimationFrame(animate);
+    var idle=(Date.now()-(model3d.lastInteract||0))>1200;
+    if(idle){
+      if(grp) grp.rotation.y += model3d.spin;
+      if(model3d.f1spin && model3d.f1model && model3d.f1model.visible) model3d.f1spin.rotation.y += model3d.spin;
+    }
+    renderer.render(scene,camera);
+  })();
+  window.addEventListener("resize",size);
+}
+function makeBldLabel(txt){
+  var c=document.createElement("canvas"); c.width=160; c.height=48;
+  var x=c.getContext("2d");
+  x.fillStyle="rgba(8,22,42,.85)"; x.fillRect(0,0,160,48);
+  x.strokeStyle="#35C5FF"; x.lineWidth=2; x.strokeRect(1,1,158,46);
+  x.fillStyle="#EAF6FF"; x.font="bold 22px 'Microsoft YaHei',sans-serif";
+  x.textAlign="center"; x.textBaseline="middle"; x.fillText(txt,80,24);
+  var tex=new THREE.CanvasTexture(c);
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  sp.scale.set(24,8,1);
+  return sp;
+}
+function updateCampusSelection(bi){
+  if(!model3d.ready) return;
+  for(var i=0;i<model3d.blds.length;i++){
+    var d=model3d.blds[i];
+    var on=(i===bi);
+    d.mesh.material.emissiveIntensity = on?0.85:0.12;
+    d.mesh.material.color.set(on?0x2E6FA8:0x16324f);
+    d.mesh.scale.set(on?1.12:1, on?1.12:1, on?1.12:1);
+  }
+}
+function modelLink(bi){
+  updateView(bi);
+  renderSubPanels(bi);
+}
+// bi===3 → 4号楼(妇产儿科) 显示真实 F1 外壳，其余楼显示程序化院区
+function updateView(bi){
+  if(!model3d.ready) return;
+  var showF1 = (bi===3 && model3d.f1ready);
+  if(model3d.group) model3d.group.visible = !showF1;
+  if(model3d.f1model) model3d.f1model.visible = showF1;
+  if(model3d.f1grid) model3d.f1grid.visible = showF1;
+  if(showF1){ frameF1(); }
+  else {
+    updateCampusSelection(bi);
+    if(model3d.campusCam && model3d.camera){
+      model3d.camera.position.copy(model3d.campusCam.pos);
+      model3d.camera.lookAt(model3d.campusCam.look);
+    }
+  }
+  refreshF1Loading();
+}
+// F1 模型加载中/失败提示（仅 4 号楼选中且模型未就绪时显示）
+function refreshF1Loading(){
+  var el=$("f1-loading"); if(!el) return;
+  var txt=$("f1-loading-txt");
+  if(model3d.f1error){
+    el.classList.remove("hide");
+    if(txt) txt.textContent="F1 模型加载失败，请检查 models/fc-f1.glb";
+    return;
+  }
+  var want=(selBuilding===3) && !model3d.f1ready;
+  el.classList.toggle("hide", !want);
+  if(want && txt) txt.textContent="F1 模型加载中…";
+}
+function frameF1(){
+  if(!model3d.f1model || !model3d.camera) return;
+  var m=model3d.f1model, cam=model3d.camera;
+  m.updateMatrixWorld(true);
+  var bb=new THREE.Box3().setFromObject(m);
+  var sz=bb.getSize(new THREE.Vector3());
+  var ct=bb.getCenter(new THREE.Vector3());
+  // 按楼层平面尺寸取景（水平半径为主），留边使模型+地面网格整体入画
+  var md=Math.max(sz.x,sz.z,1);
+  var vf=Math.tan((cam.fov/2)*Math.PI/180);
+  var lim=Math.max(0.1, Math.min(vf, vf*(cam.aspect||1)));
+  var d=(md/(2*lim))*1.18 + md*0.12;
+  var phi=1.06, theta=0.86;                 // ≈28° 俯视 · 3/4 侧前方视角
+  cam.position.set(
+    ct.x + d*Math.sin(phi)*Math.sin(theta),
+    ct.y + sz.y*0.5 + d*Math.cos(phi),
+    ct.z + d*Math.sin(phi)*Math.cos(theta)
+  );
+  cam.lookAt(new THREE.Vector3(ct.x, ct.y+sz.y*0.4, ct.z));
+}
+
+/* ============================================================
+   6. 图1 面板内容
+   ============================================================ */
+function bdRegulation(){
+  var rows=[
+    {ic:"area",  nm:"建筑总面积", v:f2(AREA_TOTAL), u:"m²（"+AREA_VERIFIED+" 栋已核）"},
+    {ic:"building", nm:"覆盖楼栋", v:"10", u:"栋"},
+    {ic:"bed",   nm:"开放床位",   v:f(MOCK.beds), u:"张"},       // MOCK(PDF)
+    {ic:"users", nm:"在院人数",   v:"—", u:"无源"}
+  ];
+  var h='';
+  rows.forEach(function(r){
+    var dim=(r.v==="—");
+    h+='<div class="ov-row"><span class="ic">'+ic(r.ic,15)+'</span>'+
+       '<span class="nm">'+esc(r.nm)+'</span>'+
+       '<span class="vl"><span class="n"'+(dim?' style="color:#62809C"':'')+'>'+r.v+'</span>'+
+       '<span class="u">'+r.u+'</span></span></div>';
+  });
+  h+='<div class="ov-note">展示口径：'+f2(AREA_TOTAL)+' m²（'+AREA_VERIFIED+
+     ' 栋已核）。1 号楼、9 号楼建筑面积待客户确认，未计入合计；'+
+     'PDF 另两行与我方 10 栋口径不符，不并入。</div>';
+  $("bd-regulation").innerHTML=h;
+}
+function bdLifecycle(){
+  var on=MOCK.online, off=MOCK.offline, al=MOCK.alarm;  // MOCK(PDF)
+  var tot=DEV_TOTAL;
+  var segs=[{v:on,c:C.green,nm:"在线"},{v:off,c:C.weak,nm:"离线"},{v:al,c:C.red,nm:"告警"}];
+  var pct=function(v){return (v/tot*100).toFixed(1)+"%";};
+  var h='<div class="on-wrap"><div class="donut">'+donut(150,56,18,segs.map(function(s){return {v:s.v,c:s.c,total:tot};}))+
+      '<div class="ct"><div class="n">'+f(tot)+'</div><div class="l">设备总数（台）</div>'+
+      '<div class="p">在线率 '+pct(on)+'</div></div></div><div class="on-leg">';
+  segs.forEach(function(s){
+    h+='<div class="li"><i style="background:'+s.c+'"></i><span class="nm">'+s.nm+'</span>'+
+       '<span class="rt"><span class="n"'+(s.nm==="在线"?' style="color:#34D98A"':(s.nm==="告警"?' style="color:#FF5252"':''))+'>'+
+       f(s.v)+'</span><span class="p">'+pct(s.v)+'</span></span></div>';
+  });
+  h+='</div></div>';
+  $("bd-lifecycle").innerHTML=h;
+}
+function bdHvac(){
+  var h='<div class="kpis">'+
+    '<div class="kpi cyan"><div class="k">今日用电</div><div class="v">'+f(MOCK.power)+'<span class="u">kWh</span></div></div>'+
+    '<div class="kpi blue"><div class="k">今日用水</div><div class="v">'+f(MOCK.water)+'<span class="u">m³</span></div></div>'+
+    '<div class="kpi green"><div class="k">今日供冷热量</div><div class="v">'+f(MOCK.cooling)+'<span class="u">kWh</span></div></div>'+
+    '</div>';
+  h+='<div class="legend">'+
+     '<span class="li"><i style="background:'+C.cyan+'"></i>用电</span>'+
+     '<span class="li"><i style="background:'+C.blue+'"></i>用水</span>'+
+     '<span class="li"><i style="background:'+C.green+'"></i>供冷热量</span>'+
+     '<span style="margin-left:auto;color:#62809C">近 7 日</span></div>';
+  h+=lineChart(392,150,[
+    {data:MOCK.power7, color:C.cyan},
+    {data:MOCK.water7, color:C.blue},
+    {data:MOCK.cool7,  color:C.green}
+  ],MOCK.days);
+  $("bd-hvac").innerHTML=h;
+}
+function bdPower(){
+  var h='<div class="kpis">'+
+    '<div class="kpi red"><div class="k">紧急</div><div class="v">'+MOCK.alarmUrgent+'</div></div>'+
+    '<div class="kpi amber"><div class="k">重要</div><div class="v">'+MOCK.alarmMajor+'</div></div>'+
+    '<div class="kpi blue"><div class="k">一般</div><div class="v">'+MOCK.alarmMinor+'</div></div>'+
+    '</div>';
+  h+='<div class="legend">'+
+     '<span class="li"><i style="background:'+C.red+'"></i>紧急</span>'+
+     '<span class="li"><i style="background:'+C.amber+'"></i>重要</span>'+
+     '<span class="li"><i style="background:'+C.blue+'"></i>一般</span>'+
+     '<span style="margin-left:auto;color:#62809C">近 7 日告警</span></div>';
+  h+=stackChart(392,150,MOCK.days,[
+    {data:MOCK.alarmU7, color:C.red},
+    {data:MOCK.alarmM7, color:C.amber},
+    {data:MOCK.alarmN7, color:C.blue}
+  ]);
+  $("bd-power").innerHTML=h;
+}
+function bdHotwater(){
+  var h='<div class="kpis">'+
+    '<div class="kpi red"><div class="k">待处理</div><div class="v">'+MOCK.woTodo+'</div></div>'+
+    '<div class="kpi amber"><div class="k">处理中</div><div class="v">'+MOCK.woDoing+'</div></div>'+
+    '<div class="kpi cyan"><div class="k">待验收</div><div class="v">'+MOCK.woCheck+'</div></div>'+
+    '<div class="kpi green"><div class="k">已完成</div><div class="v">'+MOCK.woDone+'</div></div>'+
+    '</div>';
+  h+='<div class="legend">'+
+     '<span class="li"><i style="background:'+C.cyan+'"></i>创建</span>'+
+     '<span class="li"><i style="background:'+C.green+'"></i>完成</span>'+
+     '<span class="li"><i style="background:'+C.amber+'"></i>超时</span>'+
+     '<span style="margin-left:auto;color:#62809C">近 7 日</span></div>';
+  h+=lineChart(392,150,[
+    {data:MOCK.woNew7,  color:C.cyan},
+    {data:MOCK.woDone7, color:C.green},
+    {data:MOCK.woOver7, color:C.amber}
+  ],MOCK.days);
+  $("bd-hotwater").innerHTML=h;
+}
+function bdElevator(){
+  var mx=DEV_CLASSES[0].n, h="";
+  DEV_CLASSES.forEach(function(d){
+    var pctw=Math.sqrt(d.n/mx)*100;
+    h+='<div class="dv-row"><span class="nm">'+esc(d.cn)+'</span>'+
+       '<span class="tr"><i style="width:'+pctw.toFixed(1)+'%;background:'+d.c+'"></i></span>'+
+       '<span class="ct">'+f(d.n)+'</span></div>';
+  });
+  h+='<div class="ov-note" style="margin-top:8px">合计 '+f(DEV_TOTAL)+' 台（真值，来自 10 栋设备台账汇总）</div>';
+  $("bd-elevator").innerHTML=h;
+}
+function bdLighting(){
+  var items=[
+    {k:"系统运行天数", v:f(MOCK.runDays), u:"天"},
+    {k:"系统总数",     v:f(MOCK.sysCount), u:""},
+    {k:"今日巡视点位", v:f(MOCK.patrolPts), u:"个"},
+    {k:"今日巡检任务", v:MOCK.patrolRate, u:"%"},
+    {k:"今日工单完成率", v:MOCK.woRate, u:"%"},
+    {k:"今日碳排放(估)", v:MOCK.carbon.toFixed(2), u:"吨"}
+  ];
+  var h='<div class="lit-box">';
+  items.forEach(function(it){
+    h+='<div class="bt"><div class="k">'+esc(it.k)+'</div>'+
+       '<div class="v">'+it.v+(it.u?'<span class="u">'+it.u+'</span>':'')+'</div></div>';
+  });
+  h+='</div>';
+  $("bd-lighting").innerHTML=h;
+}
+
+/* ============================================================
+   7. 图2-7 渲染
+   ============================================================ */
+function kpisHTML(arr){
+  return '<div class="kpis">'+arr.map(function(x){
+    return '<div class="kpi '+(x.c||'')+'"><div class="k">'+esc(x.k)+'</div><div class="v">'+x.v+(x.u?'<span class="u">'+x.u+'</span>':'')+'</div></div>';
+  }).join('')+'</div>';
+}
+function tagHTML(lv){
+  var m={u:["u","紧急"],m:["m","重要"],n:["n","一般"],ok:["ok","正常"]};
+  var x=m[lv]||["n","一般"];
+  return '<span class="tg '+x[0]+'">'+x[1]+'</span>';
+}
+
+// ---- 图2 ----
+function rS2(){
+  // 中央：空调系统链路
+  var c='<div class="chain">';
+  S2.link.forEach(function(nd,i){
+    if(i>0) c+='<div class="arrow">'+ic("chev",18,C.cyan)+'</div>';
+    c+='<div class="node"><span class="st '+nd.st+'">'+(nd.st==="run"?"运行":"停")+'</span>'+
+       '<span class="cn">'+nd.nm+'</span><span class="cv">'+nd.n+'' + ' 台</span>'+
+       '<span class="cl" style="color:'+C.cyan+'">'+nd.load+'%</span><span class="cv">负载</span></div>';
+  });
+  c+='</div>';
+  $("s2-link").innerHTML=c;
+
+  // 分区温度热力
+  var z='<div class="heat">';
+  S2.zones.forEach(function(t){ z+='<div class="cell" style="background:'+tempColor(t)+'">'+t+'<small>℃</small></div>'; });
+  z+='</div>';
+  $("s2-zone").innerHTML=z;
+
+  // 故障告警
+  $("s2-fault").innerHTML='<div class="lst">'+S2.faults.map(function(x){
+    return '<div class="it">'+tagHTML(x.lv)+'<span class="tx">'+esc(x.t)+'</span></div>';}).join('')+'</div>';
+
+  // 运行策略
+  $("s2-strat").innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+
+    S2.strategy.map(function(s){return '<div class="row-line"><span class="nm">'+ic("leaf",14,C.green)+' '+esc(s)+'</span><span class="vl ok">已启用</span></div>';}).join('')+
+    '<div class="row-line"><span class="nm">逆控控制</span><span class="vl ok">'+esc(S2.invCtrl)+'</span></div></div>';
+
+  // 能效分析
+  $("s2-eff").innerHTML=kpisHTML([
+    {k:"总能耗",v:f(S2.total),u:"kWh",c:"cyan"},
+    {k:"EUC 单位面积",v:S2.euc,u:"kWh/m²·a",c:"blue"},
+    {k:"系统 COP",v:S2.cop,u:"",c:"green"}
+  ])+'<div class="ov-note" style="margin-top:8px">EUC/COP 为示意计算值（MOCK(PDF)）</div>';
+
+  // 能耗占比 donut
+  var tot=S2.share.reduce(function(a,b){return a+b.v;},0);
+  var don='<div class="on-wrap"><div class="donut">'+donut(140,52,16,S2.share.map(function(s){return {v:s.v,c:s.c,total:tot};}))+
+    '<div class="ct"><div class="n">'+tot+'%</div><div class="l">总能耗占比</div></div></div><div class="on-leg">';
+  S2.share.forEach(function(s){ don+='<div class="li"><i style="background:'+s.c+'"></i><span class="nm">'+s.nm+'</span>'+
+    '<span class="rt"><span class="n">'+s.v+'%</span></span></div>'; });
+  don+='</div></div>';
+  $("s2-share").innerHTML=don;
+
+  // 能耗排名
+  $("s2-rank").innerHTML=hbarChart(442,200,S2.rank.map(function(r){return {nm:r.nm,val:r.v,color:C.cyan,unit:" kWh"};}));
+
+  // 底条：进出水温趋势 + 健康度
+  var bot='<div style="display:flex;gap:14px;height:100%">';
+  bot+='<div style="flex:1.3"><div class="mini" style="margin-bottom:2px">运行趋势 · 进出水温（℃）近 7 日</div>'+
+    lineChart(520,92,[
+      {data:S2.inWater,color:C.blue},
+      {data:S2.outWater,color:C.red}
+    ],MOCK.days)+
+    '<div class="legend"><span class="li"><i style="background:'+C.blue+'"></i>进水</span>'+
+    '<span class="li"><i style="background:'+C.red+'"></i>出水</span></div></div>';
+  bot+='<div style="flex:1"><div class="mini" style="margin-bottom:4px">设备健康度（6 台）</div><div class="hcards" style="grid-template-columns:repeat(3,1fr);height:auto">'+
+    S2.health.map(function(hd){return '<div class="hcard"><div class="hn">'+hd.n+'</div><div class="hv" style="color:'+hd.c+'">'+hd.v+'</div><div class="hs" style="color:'+hd.c+'">'+hd.s+'</div></div>';}).join('')+
+    '</div></div>';
+  bot+='</div>';
+  $("s2-bot").innerHTML=bot;
+}
+
+// ---- 图3 ----
+function rS3(){
+  $("s3-over").innerHTML=kpisHTML([
+    {k:"电梯总数",v:S3.total,u:"台",c:"cyan"},
+    {k:"运行中",v:S3.run,u:"台",c:"green"},
+    {k:"故障",v:S3.fault,u:"台",c:"red"},
+    {k:"维护",v:S3.maint,u:"台",c:"amber"}
+  ]);
+  $("s3-fault").innerHTML='<div class="lst">'+S3.faults.map(function(x){
+    return '<div class="it">'+tagHTML(x.lv)+'<span class="tx">'+esc(x.t)+'</span></div>';}).join('')+'</div>';
+  $("s3-stat").innerHTML=kpisHTML(S3.stat.map(function(s){return {k:s.k,v:s.v,u:s.u,c:s.c};}))+
+    '<div class="ov-note" style="margin-top:6px">运行统计 / 响应 / 巡检为示意值（MOCK(PDF)）</div>';
+  // 井道行程图
+  var sh='<div class="shafts">';
+  S3.shafts.forEach(function(s){ var top=100-(s.f/s.mx)*100;
+    sh+='<div class="shaft"><div class="cap">'+s.id+'</div>'+
+        '<div class="car" style="top:'+top.toFixed(1)+'%">F'+s.f+'</div></div>'; });
+  sh+='</div>';
+  $("s3-shaft").innerHTML=sh;
+  // 维保计划
+  $("s3-maint").innerHTML='<div class="lst">'+S3.maintain.map(function(x){
+    return '<div class="it"><span class="tx">'+esc(x.t)+'</span><span class="tm">'+x.d+'</span></div>';}).join('')+'</div>';
+  // 工单统计
+  $("s3-wo").innerHTML='<div class="mini" style="margin-bottom:2px">工单 创建 / 完成 / 超时（近 7 日）</div>'+
+    stackChart(442,180,MOCK.days,[
+      {data:S3.woNew,color:C.cyan},
+      {data:S3.woDone,color:C.green},
+      {data:S3.woOver,color:C.amber}
+    ]);
+  // 中央电梯编号表
+  var tb='<table class="tbl"><thead><tr><th>编号</th><th>所属楼栋</th><th>当前层</th><th>状态</th></tr></thead><tbody>'+
+    S3.elevators.map(function(e){var stc=e.st==="运行"?C.green:(e.st==="故障"?C.red:C.amber);
+      return '<tr><td>'+e.id+'</td><td>'+e.b+'</td><td>F'+e.f+'</td><td style="color:'+stc+'">'+e.st+'</td></tr>';}).join('')+
+    '</tbody></table><div class="ov-note">共 '+S3.total+' 台（示意，MOCK(PDF)），此处展示样例 '+S3.elevators.length+' 台</div>';
+  $("s3-center").innerHTML=tb;
+  // 底条
+  $("s3-bot").innerHTML='<div class="kpis" style="height:100%;align-items:center">'+
+    kpisHTML([{k:"运行统计",v:"96.9",u:"%",c:"green"},{k:"平均响应",v:"5",u:"min",c:"cyan"},
+      {k:"巡检完成",v:"92",u:"%",c:"blue"},{k:"本月工单",v:"38",u:"单",c:"amber"}]).replace('class="kpis"','class="kpis"')+
+    '</div>';
+}
+
+// ---- 图4 ----
+function rS4(){
+  // 中央配电总览
+  var ov='<div style="display:flex;gap:14px;height:100%;align-items:center">';
+  ov+='<div style="flex:1"><div class="row-line"><span class="nm">10kV 进线</span><span class="vl ok">2 路 · 正常</span></div>'+
+      '<div class="row-line"><span class="nm">1# 变压器</span><span class="vl">10kV/0.4kV</span></div>'+
+      '<div class="row-line"><span class="nm">2# 变压器</span><span class="vl">10kV/0.4kV</span></div>'+
+      '<div class="row-line"><span class="nm">运行方式</span><span class="vl ok">分段运行</span></div></div>';
+  ov+='<div style="flex:1">'+hbarChart(420,150,S4.transLoad.map(function(t){return {nm:t.nm,val:t.v,color:t.v>60?C.amber:C.green,unit:"%"};}))+
+      '<div class="mini" style="text-align:center;color:#62809C">变压器负载率（MOCK(PDF)）</div></div>';
+  ov+='</div>';
+  $("s4-over").innerHTML=ov;
+  $("s4-load").innerHTML=hbarChart(442,200,S4.transLoad.map(function(t){return {nm:t.nm,val:t.v,color:t.v>60?C.amber:C.green,unit:"%"};}));
+  $("s4-feed").innerHTML='<div class="lst">'+S4.feeders.map(function(x){
+    var cls=x.st==="ok"?"ok":"warn";
+    return '<div class="it"><span class="tx">'+esc(x.nm)+'</span><span class="vl '+cls+'">'+(x.st==="ok"?"正常":"告警")+'</span></div>';}).join('')+'</div>';
+  $("s4-abn").innerHTML='<div class="lst">'+S4.abnormal.map(function(x){
+    return '<div class="it">'+tagHTML(x.lv)+'<span class="tx">'+esc(x.t)+'</span></div>';}).join('')+'</div>';
+  // 计量体系树
+  function treeHTML(n){ var h='<div class="b"><div class="bh">'+ic("layers",14,C.cyan)+esc(n.nm)+
+      '<span class="ct">'+(n.v||"")+'</span></div>';
+    if(n.ch) n.ch.forEach(function(c){ h+='<div class="fl">'+esc(c.nm)+
+      (c.ch?'<div style="margin-left:14px">'+c.ch.map(function(cc){return '<div class="rm">'+esc(cc.nm)+' · '+(cc.v||"")+'</div>';}).join('')+'</div>':'')+'</div>'; });
+    h+='</div>'; return h; }
+  $("s4-tree").innerHTML='<div class="tree">'+S4.tree.map(treeHTML).join('')+'</div>';
+  // 需求趋势
+  $("s4-demand").innerHTML='<div class="mini" style="margin-bottom:2px">用电需求（kWh）近 7 日</div>'+
+    lineChart(442,180,[{data:S4.demand,color:C.cyan}],MOCK.days);
+  // 电能质量
+  $("s4-qual").innerHTML=hbarChart(442,200,S4.quality.map(function(q){return {nm:q.nm,val:q.v,max:q.max,color:q.st==="ok"?C.green:C.amber,unit:q.u};}));
+  // 底条
+  var bot='<div style="display:flex;gap:14px;height:100%">';
+  bot+='<div style="flex:1"><div class="mini">异常用能</div><div class="lst" style="height:auto">'+
+    S4.abnormal.map(function(x){return '<div class="it">'+tagHTML(x.lv)+'<span class="tx">'+esc(x.t)+'</span></div>';}).join('')+'</div></div>';
+  bot+='<div style="flex:1"><div class="mini">能耗排名（楼栋）</div>'+hbarChart(430,108,S4.rank.map(function(r){return {nm:r.nm,val:r.v,color:C.cyan,unit:" kWh"};}))+'</div>';
+  bot+='<div style="flex:1"><div class="mini">能耗结构</div>'+donut(120,44,14,S4.structure.map(function(s){return {v:s.v,c:s.c,total:100};}))+'</div>';
+  bot+='</div>';
+  $("s4-bot").innerHTML=bot;
+}
+
+// ---- 图5 ----
+function rS5(){
+  $("s5-center").innerHTML='<div class="mini" style="margin-bottom:2px">近 7 日告警趋势（紧急/重要/一般）</div>'+
+    lineChart(858,468,[
+      {data:MOCK.alarmU7,color:C.red},
+      {data:MOCK.alarmM7,color:C.amber},
+      {data:MOCK.alarmN7,color:C.blue}
+    ],MOCK.days);
+  $("s5-over").innerHTML=kpisHTML([
+    {k:"紧急",v:S5.urgent,u:"条",c:"red"},
+    {k:"重要",v:S5.major,u:"条",c:"amber"},
+    {k:"一般",v:S5.minor,u:"条",c:"blue"}
+  ])+'<div class="ov-note" style="margin-top:6px">告警中心为示意值（MOCK(PDF)）</div>';
+  $("s5-table").innerHTML='<table class="tbl"><thead><tr><th>告警内容</th><th>等级</th><th>时间</th></tr></thead><tbody>'+
+    S5.alarms.map(function(a){return '<tr><td>'+esc(a.t)+'</td><td>'+tagHTML(a.lv)+'</td><td>'+a.tm+'</td></tr>';}).join('')+
+    '</tbody></table>';
+  // 等级分布 donut
+  var segs=[{v:S5.urgent,c:C.red,total:S5.levelDist,nm:"紧急"},
+            {v:S5.major,c:C.amber,total:S5.levelDist,nm:"重要"},
+            {v:S5.minor,c:C.blue,total:S5.levelDist,nm:"一般"}];
+  var don='<div class="on-wrap"><div class="donut">'+donut(140,52,16,segs)+
+    '<div class="ct"><div class="n">'+S5.levelDist+'</div><div class="l">等级总数</div></div></div><div class="on-leg">'+
+    segs.map(function(s){return '<div class="li"><i style="background:'+s.c+'"></i><span class="nm">'+s.nm+'</span><span class="rt"><span class="n">'+s.v+'</span></span></div>';}).join('')+
+    '</div></div>';
+  $("s5-level").innerHTML=don;
+  // 漏斗
+  var mx=S5.funnel[0].v;
+  var fn='<div class="funnel">';
+  S5.funnel.forEach(function(st){ var w=Math.max(20,st.v/mx*100);
+    fn+='<div class="f"><div class="fb" style="width:'+w.toFixed(1)+'%;background:'+C.cyan+'">'+st.nm+' '+st.v+'</div></div>'; });
+  fn+='</div>';
+  $("s5-funnel").innerHTML=fn;
+  $("s5-resp").innerHTML=hbarChart(442,200,S5.resp.map(function(r){return {nm:r.nm,val:r.v,color:C.blue,unit:"单"};}));
+  $("s5-closed").innerHTML='<div class="mini" style="margin-bottom:2px">闭环 创建 / 完成（近 7 日）</div>'+
+    lineChart(442,180,[{data:S5.closedNew,color:C.cyan},{data:S5.closedDone,color:C.green}],MOCK.days);
+  // 底条
+  var bot='<div style="display:flex;gap:14px;height:100%">';
+  bot+='<div style="flex:1.4"><div class="mini">处置流程（5 步）</div><div style="display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap">'+
+    S5.steps.map(function(s,i){return '<span style="background:rgba(53,197,255,.12);border:1px solid '+C.cyan+';border-radius:14px;padding:4px 12px;font-size:12px;color:#EAF6FF">'+(i+1)+'. '+esc(s)+'</span>';}).join('')+
+    '</div></div>';
+  bot+='<div style="flex:1"><div class="mini">维护团队</div><div style="display:flex;align-items:center;gap:10px;margin-top:10px">'+
+    ic("users",34,C.cyan)+'<div><div class="num" style="font-size:34px">'+S5.team+'</div><div class="lbl">在岗工程师（人 · MOCK(PDF)）</div></div></div></div>';
+  bot+='</div>';
+  $("s5-bot").innerHTML=bot;
+}
+
+// ---- 图6 ----
+function rS6(){
+  function treeHTML(b){ var h='<div class="b"><div class="bh">'+ic("building",14,C.cyan)+esc(b.nm)+
+      '<span class="ct">'+b.f+'F</span></div>';
+    b.ch.forEach(function(fl){ h+='<div class="fl">'+esc(fl.nm)+' · '+esc(fl.rm)+'</div>'; });
+    h+='</div>'; return h; }
+  $("s6-tree").innerHTML='<div class="tree">'+S6.tree.map(treeHTML).join('')+'</div>';
+  $("s6-route").innerHTML='<div class="lst">'+S6.routes.map(function(x){
+    return '<div class="it"><span class="tx">'+esc(x.t)+'</span><span class="tm">'+x.d+'</span></div>';}).join('')+'</div>';
+  $("s6-asset").innerHTML=kpisHTML([
+    {k:"资产总数",v:f(S6.assets.total),u:"台",c:"cyan"},
+    {k:"已定位",v:f(S6.assets.located),u:"台",c:"green"},
+    {k:"定位率",v:S6.assets.rate,u:"%",c:"blue"}
+  ]);
+  $("s6-rec").innerHTML='<div class="lst">'+S6.records.map(function(x){
+    return '<div class="it"><span class="tx">'+esc(x.t)+'</span><span class="tm">'+x.d+'</span></div>';}).join('')+'</div>';
+  // 健康状态仪表
+  $("s6-health").innerHTML='<div class="gauge"><div class="score">'+S6.health+'</div><div class="lab">综合健康评分（MOCK(PDF)）</div>'+
+    '<div style="margin-top:10px;width:90%">'+donut(120,44,14,[{v:S6.health,c:C.green,total:100}]).replace('></svg>','opacity=".9"></svg>')+'</div></div>';
+  $("s6-asset2").innerHTML=hbarChart(442,200,S6.locate.map(function(l){return {nm:l.nm,val:l.v,color:l.c,unit:" 台"};}));
+  $("s6-alarm").innerHTML='<div class="lst">'+S6.alarms.map(function(x){
+    return '<div class="it">'+tagHTML(x.lv)+'<span class="tx">'+esc(x.t)+'</span></div>';}).join('')+'</div>';
+  // 底条
+  var bot='<div style="display:flex;gap:14px;height:100%">';
+  bot+='<div style="flex:1.2"><div class="mini">设备定位（分类台数）</div>'+hbarChart(620,108,S6.locate.map(function(l){return {nm:l.nm,val:l.v,color:l.c,unit:" 台"};}))+'</div>';
+  bot+='<div style="flex:1"><div class="mini">实时告警</div><div class="lst" style="height:auto">'+
+    S6.alarms.map(function(x){return '<div class="it">'+tagHTML(x.lv)+'<span class="tx">'+esc(x.t)+'</span></div>';}).join('')+'</div></div>';
+  bot+='</div>';
+  $("s6-bot").innerHTML=bot;
+}
+
+// ---- 图7 权威建筑面积表 ----
+function rS7(){
+  var head='<thead><tr><th>楼栋</th><th>名称</th><th>层数</th><th class="right">建筑面积 (m²)</th><th>状态</th></tr></thead>';
+  var body=BUILDINGS.map(function(b){
+    var areaCell = (b.area===null)
+      ? '<span class="pend">待核</span>'
+      : '<span style="float:right">'+f2(b.area)+'</span>';
+    var st = (b.area===null) ? '<span class="pend">待核</span>' : '<span style="color:#34D98A">已核</span>';
+    return '<tr><td class="bno">'+b.no+'号楼</td><td>'+esc(b.short)+'</td><td>'+b.floors+'</td><td>'+areaCell+'</td><td>'+st+'</td></tr>';
+  }).join('');
+  var foot='<tfoot><tr><td colspan="3">合计（已核 '+AREA_VERIFIED+' 栋）</td>'+
+    '<td class="right">'+f2(AREA_TOTAL)+'</td><td><span style="color:#34D98A">8 栋已核</span></td></tr></tfoot>';
+  $("s7-table").innerHTML=head+'<tbody>'+body+'</tbody>'+foot;
+}
+
+/* ============================================================
+   8. 屏切换
+   ============================================================ */
+function showScreen(n){
+  var screens=document.querySelectorAll(".screen");
+  for(var i=0;i<screens.length;i++) screens[i].classList.toggle("on", screens[i].id==="scr"+n);
+  var tabs=document.querySelectorAll("#tabs .ntab");
+  for(var j=0;j<tabs.length;j++) tabs[j].classList.toggle("on", tabs[j].getAttribute("data-s")===String(n));
+}
+function bindTabs(){
+  var tabs=document.querySelectorAll("#tabs .ntab");
+  for(var i=0;i<tabs.length;i++){
+    (function(t){ t.addEventListener("click",function(){ showScreen(parseInt(t.getAttribute("data-s"),10)); }); })(tabs[i]);
+  }
+}
+
+/* ============================================================
+   9. 自适应缩放 + 启动
+   ============================================================ */
+function fit(){
+  // 完整显示：取较小比例（contain），保证头部/底部/左右完整不裁切，留黑边
+  var s=Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  var st=$("stage"); if(!st) return;
+  st.style.transform="scale("+s+")";
+}
+// 波浪面积图（Catmull-Rom 平滑 + 渐变面积 + 双波浪层）
+function waveChart(w,h,vals,labels,c,gid){
+  var pl=30,pr=10,pt=10,pb=18;
+  var iw=w-pl-pr, ih=h-pt-pb, n=vals.length;
+  var mx=Math.max.apply(null,vals)*1.15, base=pt+ih;
+  var pts=[];
+  for(var i=0;i<n;i++) pts.push([pl+iw*i/(n-1), pt+ih-(vals[i]/mx)*ih]);
+  function smooth(a){
+    var d="M"+a[0][0].toFixed(1)+" "+a[0][1].toFixed(1);
+    for(var k=0;k<a.length-1;k++){
+      var p0=a[Math.max(0,k-1)],p1=a[k],p2=a[k+1],p3=a[Math.min(a.length-1,k+2)];
+      var c1x=p1[0]+(p2[0]-p0[0])/6, c1y=p1[1]+(p2[1]-p0[1])/6;
+      var c2x=p2[0]-(p3[0]-p1[0])/6, c2y=p2[1]-(p3[1]-p1[1])/6;
+      d+="C"+c1x.toFixed(1)+" "+c1y.toFixed(1)+" "+c2x.toFixed(1)+" "+c2y.toFixed(1)+" "+p2[0].toFixed(1)+" "+p2[1].toFixed(1);
+    }
+    return d;
+  }
+  var top=smooth(pts);
+  var s='<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">';
+  s+='<defs><linearGradient id="wg'+gid+'" x1="0" y1="0" x2="0" y2="1">'+
+     '<stop offset="0" stop-color="'+c+'" stop-opacity=".42"/>'+
+     '<stop offset="1" stop-color="'+c+'" stop-opacity=".02"/></linearGradient></defs>';
+  for(var g=0;g<=2;g++){
+    var gy=pt+ih*g/2;
+    s+='<line x1="'+pl+'" y1="'+gy.toFixed(1)+'" x2="'+(pl+iw)+'" y2="'+gy.toFixed(1)+'" stroke="rgba(53,197,255,.06)"/>';
+  }
+  s+='<path d="'+top+' L'+pts[n-1][0].toFixed(1)+' '+base.toFixed(1)+' L'+pts[0][0].toFixed(1)+' '+base.toFixed(1)+' Z" fill="url(#wg'+gid+')"/>';
+  var echo=pts.map(function(p,k){return [p[0], Math.min(base-2, p[1]+(k%2?7:3))];});
+  s+='<path d="'+smooth(echo)+'" fill="none" stroke="'+c+'" stroke-opacity=".16" stroke-width="1.1"/>';
+  s+='<path d="'+top+'" fill="none" stroke="'+c+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+  s+='<circle cx="'+pts[n-1][0].toFixed(1)+'" cy="'+pts[n-1][1].toFixed(1)+'" r="3.2" fill="'+c+'" stroke="#04101E" stroke-width="1.5"/>';
+  s+='<line x1="'+pl+'" y1="'+base.toFixed(1)+'" x2="'+(pl+iw)+'" y2="'+base.toFixed(1)+'" stroke="rgba(53,197,255,.22)"/>';
+  for(var i=0;i<n;i++){
+    var x=pl+iw*i/(n-1);
+    s+='<text x="'+x.toFixed(1)+'" y="'+(h-4)+'" fill="#62809C" font-size="9" text-anchor="middle" font-family="inherit">'+labels[i].slice(3)+'</text>';
+  }
+  s+='</svg>';
+  return s;
+}
+// 圆圈（圆环仪表，中心数值）
+function gauge(size,frac,c,val){
+  var r=(size-12)/2,cx=size/2,cy=size/2,sw=9,cir=2*Math.PI*r;
+  frac=Math.max(0.03,Math.min(1,frac));
+  var s='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="rgba(6,20,38,.4)" stroke="rgba(30,78,126,.5)" stroke-width="'+sw+'"/>';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+c+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="'+(cir*frac).toFixed(2)+' '+(cir).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
+  s+='<text x="'+cx+'" y="'+(cy+Math.max(4,size*0.06))+'" fill="#FFFFFF" font-size="'+(size*0.19).toFixed(1)+'" font-weight="700" text-anchor="middle" font-family="inherit">'+val+'</text>';
+  s+='</svg>';
+  return s;
+}
+/* 图1 主驾驶舱 S1-S7 七宫格（环形/堆叠柱/折线/波浪/树状/圆圈/科技蓝） */
+function renderSubPanels(bi){
+  var b=BUILDINGS[bi]; if(!b) return;
+  var CW=384, days=MOCK.days;
+  var area=(b.area==null?0:b.area);
+  var led = area>0 ? Math.round(11325*area/AREA_TOTAL) : 0;
+  var powerKwh = area>0 ? Math.round(MOCK.power*area/AREA_TOTAL) : 0;
+  function foot(txt,tag){ return '<div class="ck-foot"><span>'+txt+'</span><span class="fb">'+tag+'</span></div>'; }
+  // S1 环形图 · 用能结构
+  var share=S2.share, lg='';
+  share.forEach(function(x){
+    lg+='<div class="lr"><span><i style="background:'+x.c+'"></i>'+esc(x.nm)+'</span><b>'+x.v+'%</b></div>';
+  });
+  var e=$("w_s1"); if(e) e.innerHTML=
+    '<div class="ck"><div class="ck-row">'+
+      '<div class="ck-ring">'+donut(120,50,13,share.map(function(x){return {v:x.v,total:100,c:x.c};}))+
+        '<div class="dk-ctr"><b>'+(powerKwh?f(powerKwh):"—")+'</b><span>今日用能 kWh</span></div></div>'+
+      '<div class="ck-lg">'+lg+'</div></div>'+
+      foot('全院设备 <b style="color:#EAF6FF">'+f(DEV_TOTAL)+'</b> 台 · '+esc(b.no)+'号楼 '+esc(b.short),'环形图')+'</div>';
+  // S2 堆叠柱 · 近7日告警趋势
+  e=$("w_s2"); if(e) e.innerHTML=
+    '<div class="ck"><div class="ck-kpis">'+
+      '<span class="ck-kpi">紧急<b style="color:#FF5252">'+MOCK.alarmUrgent+'</b></span>'+
+      '<span class="ck-kpi">重要<b style="color:#FFB03A">'+MOCK.alarmMajor+'</b></span>'+
+      '<span class="ck-kpi">一般<b style="color:#5FA8FF">'+MOCK.alarmMinor+'</b></span>'+
+      '<span class="ck-kpi">闭环<b style="color:#34D98A">'+MOCK.woDone7[6]+'</b></span></div>'+
+      '<div class="ck-svg">'+stackChart(CW,104,days,[
+        {data:MOCK.alarmU7,color:"#FF5252"},{data:MOCK.alarmM7,color:"#FFB03A"},{data:MOCK.alarmN7,color:"#5FA8FF"}])+'</div>'+
+      foot('近 7 日告警（紧急 / 重要 / 一般）','堆叠柱')+'</div>';
+  // S3 折线 · 空调冷冻水进出水温度
+  e=$("w_s3"); if(e) e.innerHTML=
+    '<div class="ck"><div class="ck-kpis">'+
+      '<span class="ck-kpi">供水<b style="color:#35C5FF">'+(S2.outWater[6])+'</b>°C</span>'+
+      '<span class="ck-kpi">回水<b style="color:#2E8BFF">'+(S2.inWater[6])+'</b>°C</span>'+
+      '<span class="ck-kpi">COP<b style="color:#34D98A">'+S2.cop+'</b></span>'+
+      '<span class="ck-kpi">EUC<b style="color:#FFB03A">'+S2.euc+'</b></span></div>'+
+      '<div class="ck-svg">'+lineChart(CW,104,[
+        {data:S2.inWater,color:"#2E8BFF"},{data:S2.outWater,color:"#35C5FF"}],days)+'</div>'+
+      foot('7 日冷冻水进出水温度（℃）','折线图')+'</div>';
+  // S4 波浪 · 照明负荷示意
+  e=$("w_s4"); if(e) e.innerHTML=
+    '<div class="ck"><div class="ck-kpis">'+
+      '<span class="ck-kpi">LED<b style="color:#35C5FF">'+(led>0?f(led):"—")+'</b>盏</span>'+
+      '<span class="ck-kpi">功率<b style="color:#7AA8FF">'+(led>0?f(Math.round(led*0.012)):"—")+'</b>kW</span>'+
+      '<span class="ck-kpi">智能感应<b style="color:#62809C">二期</b></span></div>'+
+      '<div class="ck-svg">'+waveChart(CW,102,MOCK.power7,days,"#35C5FF","a1")+'</div>'+
+      foot('全院负荷 7 日平滑曲线（示意）','波浪图')+'</div>';
+  // S5 树状 · 电力计量拓扑
+  var T=S4.tree[0], tr='';
+  tr+='<div class="ct-l0">'+ic("zap",13)+esc(T.nm)+'<b>'+esc(T.v)+'</b></div><div class="ct-br">';
+  T.ch.forEach(function(ch){
+    tr+='<div class="ct-l1"><i></i>'+esc(ch.nm)+'<b>'+esc(ch.v)+'</b></div>';
+    if(ch.ch){
+      tr+='<div class="ct-leaf">'+ch.ch.map(function(l){
+        return '<span><i></i>'+esc(l.nm)+' '+esc(l.v)+'</span>';
+      }).join("")+'</div>';
+    }
+  });
+  tr+='</div><div class="ct-alert">'+ic("alert",12)+esc(S4.abnormal[0].t)+'</div>';
+  e=$("w_s5"); if(e) e.innerHTML=
+    '<div class="ck" style="justify-content:flex-start">'+tr+
+    foot('配电房 4 · 变压器 9 · 本楼 '+f(powerKwh||0)+' kWh','树状图')+'</div>';
+  // S6 圆圈 · 热水机组圆环
+  var hp=b.dev[3]||0;
+  e=$("w_s6"); if(e) e.innerHTML=
+    '<div class="ck"><div class="ck-gauges">'+
+      '<div class="gm">'+gauge(84,0.78,"#35C5FF","78%")+'<div class="gl">水箱水位</div><div class="gt">蓄热 39 t</div></div>'+
+      '<div class="gm">'+gauge(84,0.85,"#34D98A","4.2")+'<div class="gl">平均 COP</div><div class="gt">热泵群运行</div></div>'+
+      '<div class="gm">'+gauge(84,0.62,"#FFB03A","55℃")+'<div class="gl">出水平均温</div><div class="gt">管网 48℃</div></div>'+
+      '</div>'+
+      '<div class="ck-uni">'+
+      '<span><i style="background:#35C5FF"></i>#1 运行</span>'+
+      '<span><i style="background:#35C5FF"></i>#2 运行</span>'+
+      '<span><i style="background:#35C5FF"></i>#3 运行</span>'+
+      '<span><i style="background:#62809C"></i>#4 待机</span>'+
+      '<span><i style="background:#FFB03A"></i>#5 检修</span>'+
+      '<span><i style="background:#35C5FF"></i>#6 运行</span></div>'+
+      foot('本楼热泵 '+f(hp)+' 台 · 全院 20 台','圆圈')+'</div>';
+  // S7 科技蓝主卡 · 电梯节能
+  var fcs=(b.no===4)?('4号楼·妇产儿科大楼（F1 妇科一层）'):(b.no+'号楼 '+esc(b.short));
+  e=$("w_s7"); if(e) e.innerHTML=
+    '<div class="cb"><div class="cb-t">电梯节能运行 · '+esc(b.no)+'号楼</div>'+
+      '<div class="cb-nums">'+
+        '<div class="ni"><b>'+S3.run+'<em> /'+S3.total+'</em></b><span>运行 / 总数</span></div>'+
+        '<div class="ni"><b style="color:#FF5252">'+S3.fault+'</b><span>当前故障</span></div>'+
+        '<div class="ni"><b style="color:#FFB03A">'+S3.maint+'</b><span>维保中</span></div></div>'+
+      '<div class="cb-line"></div>'+
+      '<div class="cb-grid">'+
+        '<div class="cb-cell"><b>'+S3.resp+'min</b><span>平均响应</span></div>'+
+        '<div class="cb-cell"><b>'+S3.patrol+'%</b><span>巡检完成</span></div>'+
+        '<div class="cb-cell"><b>'+S3.runRate+'%</b><span>运行可靠率</span></div>'+
+        '<div class="cb-cell"><b style="color:#35C5FF">'+(S3.maintain[0].d)+'</b><span>维保计划</span></div></div>'+
+      '<div class="cb-foot"><i></i>当前聚焦楼栋 · '+fcs+'</div></div>';
+}
+function sumDev(b){var s=0;for(var i=0;i<b.dev.length;i++)s+=b.dev[i];return s;}
+function setSub(id,code,sub,rows){
+  var el=$(id); if(!el) return;
+  var h='<div class="sub-top"><span class="sub-code">'+code+'</span><span class="sub-name">'+esc(sub)+'</span></div><div class="sub-rows">';
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    h+='<div class="sub-row"><span class="k">'+esc(r.k)+'</span>'+
+       '<span class="v"'+(r.c?' style="color:'+r.c+'"':'')+'>'+r.v+(r.u?'<span class="u">'+r.u+'</span>':'')+'</span></div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+window.addEventListener("resize",fit);
+window.addEventListener("load",fit);
+
+buildChrome();
+buildWeather();
+buildNav();
+renderFloors();
+renderScene();
+bdLighting();
+rS2(); rS3(); rS4(); rS5(); rS6(); rS7();
+bindTabs();
+tick(); setInterval(tick,1000);
+fit();
+modelLink(selBuilding);
+</script>
+</body>
+</html>

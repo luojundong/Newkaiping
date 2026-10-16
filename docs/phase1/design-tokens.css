@@ -1,0 +1,179 @@
+/**
+ * 开平市中心医院能源管理平台 — Design Tokens (CSS Variables)
+ * 层级: A1-identity / A1-structure / A2-defaults / B-slot-alias / C-extension
+ * 默认主题: 深蓝指挥舱 (dark-navy command-center) — 背景 #04101f 系 / 强调 #00e5ff 系
+ * 图标库: lucide-vue-next (ADR-002 锁定，全项目唯一图标源，禁止 emoji)
+ * 适配: 4K / 10bit / DCI-P3 广色域大屏
+ */
+
+:root {
+  /* =====================================================
+     A1-identity: 品牌核心色与字体 (背景 #04101f 系 / 强调 #00e5ff 系)
+     ===================================================== */
+  --kp-bg: #04101f;
+  --kp-bg-deep: #030c18;
+  --kp-surface: #0b1827;
+  --kp-surface-raised: #112339;
+  --kp-fg: #e6f7ff;
+  --kp-fg-muted: #8ca8be;
+  --kp-fg-subtle: #5a7a94;
+  --kp-accent: #00e5ff;
+  --kp-accent-secondary: #1be5ad;
+  --kp-border: rgba(0, 229, 255, 0.16);
+
+  --kp-font-display: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --kp-font-body: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* =====================================================
+     A2-defaults: 语义色与强调色派生
+     告警配色: 红/黄/绿三态区分，按 DCI-P3 广色域调校高饱和，确保 10bit 大屏告警可辨识
+     ===================================================== */
+  --kp-accent-on: #000d14;
+  --kp-accent-hover: #33eaff;
+  --kp-accent-active: #66efff;
+  --kp-success: #2ee6a6;   /* 绿 — 正常/在线/节能达标 (广色域高饱和) */
+  --kp-warn: #ffc043;     /* 黄 — 预警/待确认 (广色域高饱和，区别于普通文本) */
+  --kp-danger: #ff4d5e;   /* 红 — 严重告警/故障/离线 (广色域高饱和) */
+  --kp-danger-glow: rgba(255, 77, 94, 0.45);
+  --kp-warn-glow: rgba(255, 192, 67, 0.4);
+  --kp-success-glow: rgba(46, 230, 166, 0.4);
+  --kp-info: #4d9fff;     /* 蓝 — 提示/信息/链接 */
+  --kp-font-mono: "JetBrains Mono", "DIN Alternate", "DIN", "Roboto Mono", monospace;
+
+  /* =====================================================
+     B-slot-alias: 别名层
+     ===================================================== */
+  --kp-fg-2: var(--kp-fg-muted);
+  --kp-meta: var(--kp-fg-subtle);
+  --kp-surface-warm: var(--kp-surface-raised);
+  --kp-border-soft: rgba(255, 255, 255, 0.06);
+  --kp-border-strong: rgba(0, 229, 255, 0.35);
+
+  /* =====================================================
+     C-extension: 品牌/项目专属扩展
+     ===================================================== */
+  --kp-glow: rgba(0, 229, 255, 0.35);
+  --kp-glow-strong: rgba(0, 229, 255, 0.6);
+  --kp-glow-soft: rgba(0, 229, 255, 0.12);
+
+  /* 子系统语义色 (7 大子系统) */
+  --kp-sys-energy: #00e5ff;
+  --kp-sys-lifecycle: #94a3b8;
+  --kp-sys-hvac: #1be5ad;
+  --kp-sys-lighting: #f59e0b;
+  --kp-sys-power: #3b82f6;
+  --kp-sys-water: #fb923c;
+  --kp-sys-elevator: #f43f5e;
+
+  /* =====================================================
+     A1-structure: 字号层级 (8 级)
+     ===================================================== */
+  --kp-text-xs: 11px;
+  --kp-text-sm: 12px;
+  --kp-text-md: 14px;
+  --kp-text-lg: 16px;
+  --kp-text-xl: 18px;
+  --kp-text-2xl: 20px;
+  --kp-text-3xl: 24px;
+  --kp-text-4xl: 32px;
+  --kp-text-hero: 40px;
+
+  /* 行高与字距 */
+  --kp-leading-body: 1.6;
+  --kp-leading-tight: 1.25;
+  --kp-tracking-display: -0.01em;
+  --kp-tracking-label: 0.08em;
+
+  /* =====================================================
+     A1-structure: 间距系统 (4px 网格)
+     ===================================================== */
+  --kp-space-1: 4px;
+  --kp-space-2: 8px;
+  --kp-space-3: 12px;
+  --kp-space-4: 16px;
+  --kp-space-5: 20px;
+  --kp-space-6: 24px;
+  --kp-space-8: 32px;
+  --kp-space-10: 40px;
+  --kp-space-12: 48px;
+  --kp-space-16: 64px;
+  --kp-space-20: 80px;
+
+  /* =====================================================
+     A2: 圆角
+     ===================================================== */
+  --kp-radius-sm: 4px;
+  --kp-radius-md: 8px;
+  --kp-radius-lg: 12px;
+  --kp-radius-xl: 16px;
+  --kp-radius-pill: 9999px;
+
+  /* =====================================================
+     A2: 层级/阴影
+     ===================================================== */
+  --kp-elev-flat: none;
+  --kp-elev-ring: 0 0 0 1px var(--kp-border);
+  --kp-elev-raised: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --kp-elev-glow: 0 0 20px var(--kp-glow);
+
+  /* =====================================================
+     A2: Focus 与 Motion
+     ===================================================== */
+  --kp-focus-ring: 0 0 0 3px rgba(0, 229, 255, 0.35);
+  --kp-motion-fast: 150ms;
+  --kp-motion-base: 200ms;
+  --kp-motion-slow: 300ms;
+  --kp-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* =====================================================
+     C-extension: 状态别名 (状态三态与语义色一致，便于组件按语义引用)
+     ===================================================== */
+  --kp-status-normal: var(--kp-success);
+  --kp-status-warning: var(--kp-warn);
+  --kp-status-critical: var(--kp-danger);
+  --kp-status-offline: #6b7f93;
+  --kp-status-unknown: #8ca8be;
+
+  /* =====================================================
+     A1-structure: 大屏布局常量
+     ===================================================== */
+  --kp-header-h: 108px;
+  --kp-panel-w: 384px;
+  --kp-bottom-h: 176px;
+  --kp-gutter: 24px;
+  --kp-container-max: 100vw;
+}
+
+/* 备用主题：翠绿 (green) — 仅交换强调色与语义色映射 */
+/* 注意：翠绿主题下强调色与“正常/在线”语义绿接近，仅作为非告警值守场景备用 */
+[data-kp-theme="green"] {
+  --kp-accent: #1be5ad;
+  --kp-accent-secondary: #00e5ff;
+  --kp-accent-on: #000d14;
+  --kp-accent-hover: #33f5bd;
+  --kp-accent-active: #66f8ce;
+  --kp-border: rgba(27, 229, 173, 0.16);
+  --kp-border-strong: rgba(27, 229, 173, 0.35);
+  --kp-glow: rgba(27, 229, 173, 0.35);
+  --kp-glow-strong: rgba(27, 229, 173, 0.6);
+  --kp-glow-soft: rgba(27, 229, 173, 0.12);
+  --kp-focus-ring: 0 0 0 3px rgba(27, 229, 173, 0.35);
+}
+
+/* 备用主题：琥珀 (amber) — 告警/高对比值守场景 */
+[data-kp-theme="amber"] {
+  --kp-accent: #ffb020;
+  --kp-accent-secondary: #ffd166;
+  --kp-accent-on: #1a0f04;
+  --kp-accent-hover: #ffbe45;
+  --kp-accent-active: #ffcb6b;
+  --kp-border: rgba(255, 176, 32, 0.16);
+  --kp-border-strong: rgba(255, 176, 32, 0.35);
+  --kp-glow: rgba(255, 176, 32, 0.35);
+  --kp-glow-strong: rgba(255, 176, 32, 0.6);
+  --kp-glow-soft: rgba(255, 176, 32, 0.12);
+  --kp-focus-ring: 0 0 0 3px rgba(255, 176, 32, 0.35);
+}
+
+/* 明令不内置：紫→粉渐变主题（含参考工程“幻紫”一类配色），违反 P0 规则。 */
+

@@ -1,0 +1,124 @@
+{
+  "_meta": {
+    "project": "开平市中心医院能源管理平台",
+    "version": "1.1.0",
+    "token_layers": ["A1-identity", "A1-structure", "A2-defaults", "B-slot-alias", "C-extension"],
+    "default_theme": "dark-navy",
+    "theme_baseline": "bg #04101f 系 / accent #00e5ff 系 / 适配 4K·10bit·DCI-P3",
+    "locked_icon_library": "lucide-vue-next",
+    "renderer": "Three.js (TresJS) — 替换参考工程 Cesium (ADR-001)",
+    "disabled_themes": ["紫→粉渐变主题（含参考工程“幻紫”一类配色）违反 P0 规则"]
+  },
+  "color": {
+    "bg": { "value": "#04101f", "type": "color", "layer": "A1-identity" },
+    "bg-deep": { "value": "#030c18", "type": "color", "layer": "A1-identity" },
+    "surface": { "value": "#0b1827", "type": "color", "layer": "A1-identity" },
+    "surface-raised": { "value": "#112339", "type": "color", "layer": "A1-identity" },
+    "fg": { "value": "#e6f7ff", "type": "color", "layer": "A1-identity" },
+    "fg-muted": { "value": "#8ca8be", "type": "color", "layer": "A1-identity" },
+    "fg-subtle": { "value": "#5a7a94", "type": "color", "layer": "A1-identity" },
+    "accent": { "value": "#00e5ff", "type": "color", "layer": "A1-identity" },
+    "accent-secondary": { "value": "#1be5ad", "type": "color", "layer": "A1-identity" },
+    "border": { "value": "rgba(0, 229, 255, 0.16)", "type": "color", "layer": "A1-identity" },
+    "accent-on": { "value": "#000d14", "type": "color", "layer": "A2-defaults" },
+    "accent-hover": { "value": "#33eaff", "type": "color", "layer": "A2-defaults" },
+    "accent-active": { "value": "#66efff", "type": "color", "layer": "A2-defaults" },
+    "success": { "value": "#2ee6a6", "type": "color", "layer": "A2-defaults", "note": "DCI-P3 高饱和绿" },
+    "warn": { "value": "#ffc043", "type": "color", "layer": "A2-defaults", "note": "DCI-P3 高饱和黄" },
+    "danger": { "value": "#ff4d5e", "type": "color", "layer": "A2-defaults", "note": "DCI-P3 高饱和红" },
+    "danger-glow": { "value": "rgba(255, 77, 94, 0.45)", "type": "color", "layer": "C-extension" },
+    "warn-glow": { "value": "rgba(255, 192, 67, 0.4)", "type": "color", "layer": "C-extension" },
+    "success-glow": { "value": "rgba(46, 230, 166, 0.4)", "type": "color", "layer": "C-extension" },
+    "info": { "value": "#4d9fff", "type": "color", "layer": "A2-defaults" },
+    "fg-2": { "value": "{color.fg-muted}", "type": "color", "layer": "B-slot-alias" },
+    "meta": { "value": "{color.fg-subtle}", "type": "color", "layer": "B-slot-alias" },
+    "surface-warm": { "value": "{color.surface-raised}", "type": "color", "layer": "B-slot-alias" },
+    "border-soft": { "value": "rgba(255, 255, 255, 0.06)", "type": "color", "layer": "B-slot-alias" },
+    "border-strong": { "value": "rgba(0, 229, 255, 0.35)", "type": "color", "layer": "B-slot-alias" },
+    "status-normal": { "value": "{color.success}", "type": "color", "layer": "C-extension" },
+    "status-warning": { "value": "{color.warn}", "type": "color", "layer": "C-extension" },
+    "status-critical": { "value": "{color.danger}", "type": "color", "layer": "C-extension" },
+    "status-offline": { "value": "#6b7f93", "type": "color", "layer": "C-extension" },
+    "status-unknown": { "value": "#8ca8be", "type": "color", "layer": "C-extension" },
+    "glow": { "value": "rgba(0, 229, 255, 0.35)", "type": "color", "layer": "C-extension" },
+    "glow-strong": { "value": "rgba(0, 229, 255, 0.6)", "type": "color", "layer": "C-extension" },
+    "glow-soft": { "value": "rgba(0, 229, 255, 0.12)", "type": "color", "layer": "C-extension" }
+  },
+  "system": {
+    "energy": { "value": "#00e5ff", "type": "color", "layer": "C-extension", "label": "智慧能源一体化调控平台" },
+    "lifecycle": { "value": "#94a3b8", "type": "color", "layer": "C-extension", "label": "设备生命周期管理系统" },
+    "hvac": { "value": "#1be5ad", "type": "color", "layer": "C-extension", "label": "空调集中控制调度系统" },
+    "lighting": { "value": "#f59e0b", "type": "color", "layer": "C-extension", "label": "智慧照明管理系统" },
+    "power": { "value": "#3b82f6", "type": "color", "layer": "C-extension", "label": "医院电力监控系统" },
+    "water": { "value": "#fb923c", "type": "color", "layer": "C-extension", "label": "热水集中控制调度系统" },
+    "elevator": { "value": "#f43f5e", "type": "color", "layer": "C-extension", "label": "电梯节能管理系统" }
+  },
+  "font": {
+    "family": {
+      "display": { "value": "\"Inter\", \"Noto Sans SC\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif", "type": "fontFamily", "layer": "A1-identity" },
+      "body": { "value": "\"Inter\", \"Noto Sans SC\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif", "type": "fontFamily", "layer": "A1-identity" },
+      "mono": { "value": "\"JetBrains Mono\", \"DIN Alternate\", \"DIN\", \"Roboto Mono\", monospace", "type": "fontFamily", "layer": "A2-defaults" }
+    },
+    "size": {
+      "xs": { "value": "11px", "type": "dimension", "layer": "A1-structure" },
+      "sm": { "value": "12px", "type": "dimension", "layer": "A1-structure" },
+      "md": { "value": "14px", "type": "dimension", "layer": "A1-structure" },
+      "lg": { "value": "16px", "type": "dimension", "layer": "A1-structure" },
+      "xl": { "value": "18px", "type": "dimension", "layer": "A1-structure" },
+      "2xl": { "value": "20px", "type": "dimension", "layer": "A1-structure" },
+      "3xl": { "value": "24px", "type": "dimension", "layer": "A1-structure" },
+      "4xl": { "value": "32px", "type": "dimension", "layer": "A1-structure" },
+      "hero": { "value": "40px", "type": "dimension", "layer": "A1-structure" }
+    },
+    "leading": {
+      "body": { "value": "1.6", "type": "number", "layer": "A1-structure" },
+      "tight": { "value": "1.25", "type": "number", "layer": "A1-structure" }
+    },
+    "tracking": {
+      "display": { "value": "-0.01em", "type": "dimension", "layer": "A1-structure" },
+      "label": { "value": "0.08em", "type": "dimension", "layer": "A1-structure" }
+    }
+  },
+  "space": {
+    "1": { "value": "4px", "type": "dimension", "layer": "A1-structure" },
+    "2": { "value": "8px", "type": "dimension", "layer": "A1-structure" },
+    "3": { "value": "12px", "type": "dimension", "layer": "A1-structure" },
+    "4": { "value": "16px", "type": "dimension", "layer": "A1-structure" },
+    "5": { "value": "20px", "type": "dimension", "layer": "A1-structure" },
+    "6": { "value": "24px", "type": "dimension", "layer": "A1-structure" },
+    "8": { "value": "32px", "type": "dimension", "layer": "A1-structure" },
+    "10": { "value": "40px", "type": "dimension", "layer": "A1-structure" },
+    "12": { "value": "48px", "type": "dimension", "layer": "A1-structure" },
+    "16": { "value": "64px", "type": "dimension", "layer": "A1-structure" },
+    "20": { "value": "80px", "type": "dimension", "layer": "A1-structure" }
+  },
+  "radius": {
+    "sm": { "value": "4px", "type": "dimension", "layer": "A2-defaults" },
+    "md": { "value": "8px", "type": "dimension", "layer": "A2-defaults" },
+    "lg": { "value": "12px", "type": "dimension", "layer": "A2-defaults" },
+    "xl": { "value": "16px", "type": "dimension", "layer": "A2-defaults" },
+    "pill": { "value": "9999px", "type": "dimension", "layer": "A2-defaults" }
+  },
+  "shadow": {
+    "flat": { "value": "none", "type": "boxShadow", "layer": "A2-defaults" },
+    "ring": { "value": "0 0 0 1px {color.border}", "type": "boxShadow", "layer": "A2-defaults" },
+    "raised": { "value": "0 4px 24px rgba(0, 0, 0, 0.4)", "type": "boxShadow", "layer": "A2-defaults" },
+    "glow": { "value": "0 0 20px {color.glow}", "type": "boxShadow", "layer": "C-extension" }
+  },
+  "focus": {
+    "ring": { "value": "0 0 0 3px rgba(0, 229, 255, 0.35)", "type": "boxShadow", "layer": "A2-defaults" }
+  },
+  "motion": {
+    "fast": { "value": "150ms", "type": "duration", "layer": "A2-defaults" },
+    "base": { "value": "200ms", "type": "duration", "layer": "A2-defaults" },
+    "slow": { "value": "300ms", "type": "duration", "layer": "A2-defaults" },
+    "ease-standard": { "value": "cubic-bezier(0.2, 0, 0, 1)", "type": "cubicBezier", "layer": "A2-defaults" }
+  },
+  "layout": {
+    "header-h": { "value": "108px", "type": "dimension", "layer": "A1-structure" },
+    "panel-w": { "value": "384px", "type": "dimension", "layer": "A1-structure" },
+    "bottom-h": { "value": "176px", "type": "dimension", "layer": "A1-structure" },
+    "gutter": { "value": "24px", "type": "dimension", "layer": "A1-structure" },
+    "container-max": { "value": "100vw", "type": "dimension", "layer": "A1-structure" }
+  }
+}
