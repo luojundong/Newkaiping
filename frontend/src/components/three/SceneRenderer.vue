@@ -82,6 +82,8 @@ const highlightGroup = new THREE.Group()
 // GK-30：楼层真实模型组（妇产儿科楼 1 层 GLB）。与 modelGroup（院区主模型）解耦，独立加载/卸载。
 const floorModelGroup = new THREE.Group()
 const floorModelReady = ref(false)
+// 6 号楼整栋世界包围盒（点击整栋模型按世界 Y 跳楼层映射用）；仅整栋态有效
+let bld6WholeWorldBox: THREE.Box3 | null = null
 let ground: THREE.Mesh | null = null
 const selectedAreaId = ref<string | null>(null)
 const hoveredAreaId = ref<string | null>(null)
@@ -591,7 +593,12 @@ function disposeGroup(g: THREE.Group) {
 }
 
 async function loadFloorModel(
-  asset: { url: string; mapping: { position: [number, number, number]; rotationY: number; scale: number } },
+  asset: {
+    url: string
+    buildingId: string
+    floor?: number
+    mapping: { position: [number, number, number]; rotationY: number; scale: number }
+  },
 ): Promise<void> {
   const obj = await loadObject(asset.url)
   obj.traverse((child) => {
@@ -615,6 +622,35 @@ async function loadFloorModel(
 
   disposeGroup(floorModelGroup)
   floorModelGroup.add(g)
+  // 记录 6 号楼整栋世界包围盒（供点击跳楼层按世界 Y 映射楼层；含模型真实 transform）
+  if (String(asset.buildingId) === '6' && !('floor' in (asset as Record<string, unknown>))) {
+    bld6WholeWorldBox = new THREE.Box3().setFromObject(floorModelGroup)
+  } else if (String(asset.buildingId) === '6') {
+    bld6WholeWorldBox = null
+  }
+}
+
+/**
+ * 6 号楼整栋命中代理：不可见盒体覆盖整栋模型世界包围盒，供射线拾取命中后按命中 Y 映射楼层。
+ * 仅在整栋态（activeBuildingModel 非空）由 buildMarkers 调用；进入楼层钻取或切换楼栋时随 buildMarkers 清理。
+ */
+function addBld6WholeHitProxy(box: THREE.Box3): void {
+  const size = box.getSize(new THREE.Vector3())
+  const center = box.getCenter(new THREE.Vector3())
+  const geo = new THREE.BoxGeometry(size.x, size.y, size.z)
+  const mat = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })
+  const mesh = new THREE.Mesh(geo, mat)
+  mesh.position.copy(center)
+  mesh.userData = { type: 'bldg6whole', id: '6', yMin: box.min.y, yMax: box.max.y }
+  markersGroup.add(mesh)
+  selectables.push(mesh)
+}
+
+/** 6 号楼整栋世界 Y → 楼层（1/2/3）映射（与 InteractionController 同一公式） */
+function bld6FloorFromWorldY(y: number, yMin: number, yMax: number): number {
+  const span = Math.max(0.001, yMax - yMin)
+  const f = Math.ceil(((y - yMin) / span) * 3)
+  return Math.min(3, Math.max(1, f))
 }
 
 function unloadFloorModel(): void {
@@ -764,13 +800,13 @@ function buildMarkers() {
   if (!ready) return
   if (isMediaScene.value) {
     while (markersGroup.children.length) markersGroup.remove(markersGroup.children[0])
-    removeSelectablesByTypes(['building', 'floorLabel'])
+    removeSelectablesByTypes(['building', 'floorLabel', 'bldg6whole'])
     buildingMeshes.clear()
     return
   }
   if (!sceneStore.markerSwitch?.show_building_markers) {
     while (markersGroup.children.length) markersGroup.remove(markersGroup.children[0])
-    removeSelectablesByTypes(['building', 'floorLabel'])
+    removeSelectablesByTypes(['building', 'floorLabel', 'bldg6whole'])
     buildingMeshes.clear()
     return
   }
@@ -778,7 +814,7 @@ function buildMarkers() {
   // GK-13 修复：只移除本层（楼栋/楼层标签）的条目，不能全量清空 ——
   // 否则 markerSwitch→buildPoints 先入队的设备标记会在 buildingDisplay→本函数
   // 重建时被整段抹掉（watch 顺序敏感），设备从此不可 raycast。
-  removeSelectablesByTypes(['building', 'floorLabel'])
+  removeSelectablesByTypes(['building', 'floorLabel', 'bldg6whole'])
   buildingMeshes.clear()
 
   const disp = sceneStore.buildingDisplay
@@ -861,6 +897,15 @@ function buildMarkers() {
     buildingMeshes.set(b.buildingId, { box: mesh, line: borderLine })
     buildFloorLabelsForBuilding({ id: b.buildingId, floors: b.floors }, a, side, isBox, disp)
   })
+  // 6 号楼整栋态：命中代理（点击整栋模型按世界 Y 跳楼层，仿参考页 click→jump floor）
+  if (
+    floorModelReady.value &&
+    activeModelBuildingId.value === '6' &&
+    activeBuildingModel.value &&
+    bld6WholeWorldBox
+  ) {
+    addBld6WholeHitProxy(bld6WholeWorldBox)
+  }
   buildAreaMarkers()
   applyBuildingHoverColors()
 }
@@ -1426,6 +1471,8 @@ onMounted(async () => {
   initThree()
   window.addEventListener('resize', onResize)
   if (import.meta.env.DEV) installFloorModelDebugHook()
+  // 6 号楼点击跳楼层：生产/QA 可用诊断句柄（始终注入，安全只读 + 触发整栋→楼层钻取）
+  installBld6JumpHook()
   await ensureSceneConfig()
   reloadScene()
 })
@@ -1452,6 +1499,22 @@ function installFloorModelDebugHook() {
     isVisible: () => floorModelGroup.children.length > 0,
     meshCount: () => countMeshesInGroup(floorModelGroup),
     groupChildCount: () => floorModelGroup.children.length,
+    // 6 号楼整栋世界包围盒（点击跳楼层 Y 映射真值；null = 未加载整栋）
+    bld6WholeBox: () =>
+      bld6WholeWorldBox
+        ? {
+            minY: +bld6WholeWorldBox.min.y.toFixed(3),
+            maxY: +bld6WholeWorldBox.max.y.toFixed(3),
+            childCount: floorModelGroup.children.length,
+          }
+        : null,
+    // 6 号楼：给定世界 Y 计算楼层（1/2/3）并触发整栋→楼层钻取（QA 验证 Y→floor 映射 + 联动，无需依赖画布点击坐标）
+    bld6JumpFromY: (y: number) => {
+      if (!bld6WholeWorldBox) return null
+      const f = bld6FloorFromWorldY(y, bld6WholeWorldBox.min.y, bld6WholeWorldBox.max.y)
+      useSceneStore().openFloorDrill('6', f)
+      return f
+    },
     // 异常路径自测：用任意 url 尝试加载并立即释放，返回值 'ok'/'fail'，不污染当前场景
     loadUrl: async (url: string) => {
       try {
@@ -1473,6 +1536,38 @@ function installFloorModelDebugHook() {
 function uninstallFloorModelDebugHook() {
   const w = window as unknown as { __kpFloorModel?: unknown }
   if (w.__kpFloorModel) delete w.__kpFloorModel
+}
+
+// 6 号楼整栋点击跳楼层：生产/QA 可用诊断句柄（始终注入，安全只读 + 触发整栋→楼层钻取）。
+// 与 InteractionController 内「命中 bldg6whole 代理 → 按世界 Y 映射楼层 → openFloorDrill('6',f)」同一公式，
+// 供 e2e 在无需依赖画布像素坐标的前提下验证算法逻辑与联动。
+function installBld6JumpHook() {
+  const w = window as unknown as { __kpB6Jump: unknown }
+  w.__kpB6Jump = {
+    // 整栋世界包围盒（null = 整栋 6 号楼模型尚未加载）
+    wholeBox: () =>
+      bld6WholeWorldBox
+        ? {
+            minY: +bld6WholeWorldBox.min.y.toFixed(3),
+            maxY: +bld6WholeWorldBox.max.y.toFixed(3),
+          }
+        : null,
+    // 给定世界 Y 计算楼层（1/2/3），纯算法（与 bld6FloorFromWorldY 一致）
+    floorFromY: (y: number) =>
+      bld6WholeWorldBox ? bld6FloorFromWorldY(y, bld6WholeWorldBox.min.y, bld6WholeWorldBox.max.y) : null,
+    // 触发整栋→楼层钻取（与点击整栋模型走同一 openFloorDrill 入口），返回目标楼层
+    jumpFromY: (y: number) => {
+      if (!bld6WholeWorldBox) return null
+      const f = bld6FloorFromWorldY(y, bld6WholeWorldBox.min.y, bld6WholeWorldBox.max.y)
+      useSceneStore().openFloorDrill('6', f)
+      return f
+    },
+    // 当前楼层钻取态（store 真相源，同步生效，不依赖 el-dialog 关闭过渡动画），供 QA 验证整楼 Tab→closeFloorDrill
+    floorDrill: () => {
+      const fd = useSceneStore().floorDrill
+      return { buildingId: fd.buildingId, floor: fd.floor }
+    },
+  }
 }
 
 // 暴露给 ThreeViewer facade / InteractionController 用

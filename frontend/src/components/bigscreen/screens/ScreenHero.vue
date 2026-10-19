@@ -37,6 +37,7 @@ import {
 import type { LucideIcon } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import BsPanel from '../BsPanel.vue'
+import Bld6FloorTabs from '../Bld6FloorTabs.vue'
 import BsDonut from '../charts/BsDonut.vue'
 import BsGauge from '../charts/BsGauge.vue'
 import BsLine from '../charts/BsLine.vue'
@@ -545,6 +546,9 @@ const energyKwhText = computed(() => (energy.value.kwh ? f0(energy.value.kwh) : 
 
     <!-- ============ 数据来源脚注 ============ -->
     <div v-if="footNote" class="bs-note">{{ footNote }}</div>
+
+    <!-- ============ 6 号楼后勤大楼 3D 楼层切换浮层（参考页 floor-tabs 迁移） ============ -->
+    <Bld6FloorTabs :active="active" />
   </section>
 </template>
 

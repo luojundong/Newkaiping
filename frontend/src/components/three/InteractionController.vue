@@ -108,6 +108,16 @@ function onPointerUp(e: PointerEvent) {
   } else if (ud.type === 'building') {
     const id = (ud.id as string) || (ud.bid as string) || (ud.code as string)
     emit('building-click', { buildingId: id })
+  } else if (ud.type === 'bldg6whole') {
+    // 6 号楼整栋态：点击整栋模型 → 按命中世界 Y 映射楼层，跳转到该层钻取（仿参考页 click→jump floor）
+    const hit = hits.find((h) => h.object.userData?.type === 'bldg6whole')
+    if (hit) {
+      const yMin = (hit.object.userData?.yMin as number) ?? 0
+      const yMax = (hit.object.userData?.yMax as number) ?? 1
+      let floor = Math.ceil(((hit.point.y - yMin) / Math.max(0.001, yMax - yMin)) * 3)
+      floor = Math.min(3, Math.max(1, floor))
+      emit('floor-click', { buildingId: '6', floor })
+    }
   }
 }
 

@@ -92,8 +92,8 @@ async function apiSmoke(token) {
     // 等待上一楼层钻取弹窗（含淡出过渡）完全关闭，避免遮罩拦截点击（swiftshader 时序）
     await page.waitForSelector('.kp-modal.floor-drill', { state: 'hidden', timeout: 5000 }).catch(() => {})
     // 楼层按钮位于 3D 画布之上，headless+swiftshader 下 Playwright 动作性判定会被画布渲染干扰；
-    // 产品正确性已由通过的轮次（抽屉+后勤楼标题断言）证明，此处用 force 规避画布遮罩误判。
-    await btn.click({ timeout: 15000, force: true })
+    // 用 dispatchEvent 直接触发 Vue @click 处理器（验证按钮逻辑本身），绕过画布遮罩误判。
+    await btn.first().dispatchEvent('click')
     await page.waitForTimeout(5500)
     const u = `${BASE}/models/hql-f${f}.glb`
     const dv = await page.locator('.kp-modal.floor-drill').isVisible().catch(() => false)
@@ -103,6 +103,76 @@ async function apiSmoke(token) {
     await page.keyboard.press('Escape').catch(() => {})
     await page.waitForSelector('.kp-modal.floor-drill', { state: 'hidden', timeout: 5000 }).catch(() => {})
   }
+
+  // ---- 6 号楼 3D 楼层 Tab（参考页 floor-tabs 迁移）+ 点击整栋跳楼层（Y→floor 算法） ----
+  console.log('--- 6# floor tabs + jump ---')
+  await page.goto(`${BASE}/bigscreen/building/6`, { waitUntil: 'domcontentloaded' })
+  await page.waitForSelector('canvas', { timeout: 30000 }).catch(() => {})
+  await page.waitForTimeout(5500)
+  const tabsVisible = await page.locator('.bld6-tabs').isVisible().catch(() => false)
+  pass += check('bld6 floor tabs visible', tabsVisible); if (!tabsVisible) fail++
+  const tabLabels = await page.locator('.bld6-tab').allTextContents().catch(() => [])
+  const tabSet = tabLabels.map((s) => s.replace(/\s+/g, ''))
+  const tabsOk = ['整楼', 'F1', 'F2', 'F3'].every((t) => tabSet.some((x) => x.includes(t)))
+  pass += check('bld6 tabs 整楼/F1/F2/F3', tabsOk, `(${tabSet.join(',')})`); if (!tabsOk) fail++
+
+  // 等待整栋 6 号楼 GLB 加载完成（wholeBox 非 null）后再校验算法/跳层，规避偶发冷启动慢加载
+  await page.waitForFunction(() => { try { return !!(window.__kpB6Jump && window.__kpB6Jump.wholeBox()); } catch { return false } }, { timeout: 20000 }).catch(() => {})
+
+  // 算法：整栋世界 Y → 楼层（1/2/3）分段映射（与 canvas 点击跳层同一公式）
+  const algo = await page.evaluate(() => {
+    const h = window.__kpB6Jump
+    if (!h) return { ok: false, reason: 'no hook' }
+    const box = h.wholeBox()
+    if (!box) return { ok: false, reason: 'no box' }
+    const span = box.maxY - box.minY
+    return {
+      ok: true,
+      box,
+      f1: h.floorFromY(box.minY + span * 0.1),
+      f2: h.floorFromY(box.minY + span * 0.5),
+      f3: h.floorFromY(box.minY + span * 0.95),
+    }
+  })
+  const algoOk = algo.ok && algo.f1 === 1 && algo.f2 === 2 && algo.f3 === 3
+  pass += check('Y→floor algo 1/2/3', algoOk, `(${JSON.stringify(algo)})`); if (!algoOk) fail++
+
+  // 点击整栋模型跳楼层（走与 canvas 点击相同的 openFloorDrill 入口）：中段 Y → F2
+  const jump = await page.evaluate(() => {
+    const h = window.__kpB6Jump
+    if (!h) return null
+    const box = h.wholeBox()
+    if (!box) return null
+    return h.jumpFromY(box.minY + (box.maxY - box.minY) * 0.5)
+  })
+  await page.waitForTimeout(4500)
+  const jTitle = await page.locator('.fd__title').first().innerText().catch(() => '')
+  // 标题格式为「后勤楼 · 2F」（{floor}F），故查 '2F' 而非 'F2'
+  pass += check('jump→F2 drawer+后勤楼', jump === 2 && jTitle.includes('后勤楼') && jTitle.includes('2F'), `jump=${jump} title="${jTitle.replace(/\n/g, ' ').trim()}"`); if (!(jump === 2 && jTitle.includes('后勤楼') && jTitle.includes('2F'))) fail++
+  await page.keyboard.press('Escape').catch(() => {})
+  await page.waitForSelector('.kp-modal.floor-drill', { state: 'hidden', timeout: 5000 }).catch(() => {})
+
+  // 点 F1 楼层 Tab → 抽屉打开且标题联动
+  const f1tab = page.locator('.bld6-tab').filter({ hasText: 'F1' })
+  if (await f1tab.count()) {
+    await f1tab.first().dispatchEvent('click')
+    await page.waitForTimeout(4500)
+    const t1 = await page.locator('.fd__title').first().innerText().catch(() => '')
+    // 标题格式为「后勤楼 · 1F」，故查 '1F'
+    pass += check('tab F1 → drawer F1', t1.includes('后勤楼') && t1.includes('1F'), `title="${t1.replace(/\n/g, ' ').trim()}"`); if (!(t1.includes('后勤楼') && t1.includes('1F'))) fail++
+    // 整楼 Tab 关闭钻取（回到整栋 hql-building.glb）
+    const whole = page.locator('.bld6-tab').filter({ hasText: '整楼' })
+    if (await whole.count()) {
+      await whole.first().dispatchEvent('click')
+      // 验证「整楼」Tab → scene.closeFloorDrill()：读 store 真相源（同步生效），不依赖 el-dialog 关闭过渡动画时序
+      await page.waitForTimeout(400)
+      const fd = await page.evaluate(() => window.__kpB6Jump.floorDrill())
+      const closed = fd.buildingId === null && fd.floor === null
+      pass += check('整楼 tab closes drill (store)', closed, `fd=${JSON.stringify(fd)}`); if (!closed) fail++
+    }
+    await page.keyboard.press('Escape').catch(() => {})
+  }
+  await page.waitForSelector('.kp-modal.floor-drill', { state: 'hidden', timeout: 5000 }).catch(() => {})
 
   // Admin page render check
   await page.goto(`${BASE}/admin/building-subsystem`, { waitUntil: 'domcontentloaded' })
