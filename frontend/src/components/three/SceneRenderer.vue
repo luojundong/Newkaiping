@@ -449,16 +449,21 @@ async function loadModel() {
         obj = await tryLoad(MODEL_URL)
       }
       placeModel(obj)
-      // 模型重载后回到默认视角（先打断可能在途的 preset 补间，避免旧 tween 覆盖默认落点）
-      cancelCameraTween()
-      activePresetId.value = null
-      if (camera && controls) {
-        camera.position.set(74, 56, 102)
-        controls.target.set(30, 20, 0)
-        controls.minDistance = 18
-        controls.maxDistance = 600
-        controls.maxPolarAngle = Math.PI / 2.1
-        controls.update()
+      // 模型重载后回到默认视角（先打断可能在途的 preset 补间，避免旧 tween 覆盖默认落点）。
+      // 但仅当用户尚未产生「主动视角」时才回默认：主模型加载期间用户可能已点楼栋飞行
+      // （selectedBuilding 非空 / 已应用 preset），此时回默认会清掉用户视角
+      // （表现为选 6 号楼对准模型后几秒又被拽回全景，headless 慢加载下必现）。
+      if (!sceneStore.selectedBuilding && !activePresetId.value) {
+        cancelCameraTween()
+        activePresetId.value = null
+        if (camera && controls) {
+          camera.position.set(74, 56, 102)
+          controls.target.set(30, 20, 0)
+          controls.minDistance = 18
+          controls.maxDistance = 600
+          controls.maxPolarAngle = Math.PI / 2.1
+          controls.update()
+        }
       }
     }
     if (disposed) return
@@ -1227,6 +1232,47 @@ function applyPresetFlight(preset: CameraPreset, presetId: string): boolean {
   return true
 }
 
+/**
+ * 从 preset id 解析出绑定的楼栋 id（仅楼栋/楼层 preset 支持锚点跟随平移）。
+ * 约定：preset_bldg_<id>_overview / preset_floor_<id>_<floor>（见 cameraPreset.ts id 约定）。
+ */
+function presetBuildingId(preset: CameraPreset): string | null {
+  const m1 = /^preset_bldg_([^_]+)_overview$/.exec(preset.id)
+  if (m1) return m1[1]
+  const m2 = /^preset_floor_([^_]+)_\d+$/.exec(preset.id)
+  if (m2) return m2[1]
+  return null
+}
+
+/**
+ * 楼栋/楼层预设跟随运行时锚点平移（修复「选 6 号楼看不到模型」根因）。
+ *
+ * 真实 GLB 模型按 runtime 锚点 x/z 渲染（后台「楼栋锚点」可拖动，见 GK-30b watch 内
+ * anchorOf('6') 覆盖）；而预设的 lookAt.x/z 是「设计期楼栋位置」。锚点被拖动后若仍用
+ * 旧 lookAt 飞行，相机会看向空地/树丛，模型离屏。故按 (runtimeAnchor − authoredLookAt)
+ * 的 x/z 差值同时平移 pose.position 与 pose.lookAt，使相机始终对准真实模型。
+ *
+ * y 方向不平移：模型竖直堆叠偏移由 mapping.position.y 固定，与锚点 y 无关。
+ * 未拖动（runtimeAnchor == authoredLookAt）时 dx/dz≈0，平移为 no-op，行为不变。
+ */
+function translatePresetForAnchor(preset: CameraPreset, buildingId: string): CameraPreset {
+  const a = anchorOf(buildingId)
+  if (!a) return preset
+  const authoredX = preset.pose.lookAt[0]
+  const authoredZ = preset.pose.lookAt[2]
+  const dx = a[0] - authoredX
+  const dz = a[2] - authoredZ
+  if (Math.abs(dx) < 1e-6 && Math.abs(dz) < 1e-6) return preset
+  return {
+    ...preset,
+    pose: {
+      ...preset.pose,
+      position: [preset.pose.position[0] + dx, preset.pose.position[1], preset.pose.position[2] + dz],
+      lookAt: [preset.pose.lookAt[0] + dx, preset.pose.lookAt[1], preset.pose.lookAt[2] + dz],
+    },
+  }
+}
+
 /** 回退默认全院视角（无 schema / 预设缺失时的"默认视角"兜底） */
 function resetDefaultView(): boolean {
   if (!camera) return false
@@ -1253,20 +1299,26 @@ function flyToPreset(presetId: string): boolean {
     )
     return resetDefaultView()
   }
-  return applyPresetFlight(preset, presetId)
+  // 楼栋/楼层 preset 跟随运行时锚点平移（选 6 号楼看不到模型修复）
+  const bid = presetBuildingId(preset)
+  const eff = bid ? translatePresetForAnchor(preset, bid) : preset
+  return applyPresetFlight(eff, presetId)
 }
 
 /** 单一入口 2：点/选楼栋 → preset_bldg_<id>_overview；无 preset 回退楼栋锚点视角（原 flyTo） */
 function flyToBuilding(buildingId: string): boolean {
   if (!buildingId) return false
   const preset = findBuildingPreset(cameraPresetList.value, buildingId)
-  if (preset) return applyPresetFlight(preset, preset.id)
+  if (preset) return applyPresetFlight(translatePresetForAnchor(preset, buildingId), preset.id)
   console.warn(
     `[cameraPreset] 楼栋「${buildingId}」无 overview preset（${presetIdForBuilding(buildingId)}），回退楼栋锚点视角`,
   )
   const a = anchorFor(buildingId)
   if (a) {
-    flyTo(a)
+    // 盒体/真实模型/高亮光束均落地渲染（box 用 boxH/2、beam 用固定高度、ring 贴地 y=0.6，
+    // 锚点 y 不参与任何放置），故回退视角目标取地面高度，避免 lookAt 高悬于模型上方
+    // （锚点 y 可能是任意拖动残留值，如 6 号楼 y=40，会导致模型沉到画面底部之外）。
+    flyTo([a[0], 0, a[2]])
     return true
   }
   return resetDefaultView()
@@ -1276,7 +1328,7 @@ function flyToBuilding(buildingId: string): boolean {
 function flyToFloor(buildingId: string, floor: number): boolean {
   if (!buildingId || typeof floor !== 'number' || !Number.isFinite(floor)) return false
   const preset = findFloorPreset(cameraPresetList.value, buildingId, floor)
-  if (preset) return applyPresetFlight(preset, preset.id)
+  if (preset) return applyPresetFlight(translatePresetForAnchor(preset, buildingId), preset.id)
   console.warn(
     `[cameraPreset] 楼层「${buildingId}/${floor}」无 floor preset（${presetIdForFloor(buildingId, floor)}），相机保持现状`,
   )
@@ -1566,6 +1618,23 @@ function installBld6JumpHook() {
     floorDrill: () => {
       const fd = useSceneStore().floorDrill
       return { buildingId: fd.buildingId, floor: fd.floor }
+    },
+    // 真实相机位姿（position + controls.target + fov），供 QA 验证「选 6 号楼相机对准真实模型」。
+    // 与 __kpSceneCamera.getPose 同源，但本钩子常驻（非 DEV-only），生产构建亦可校验。
+    camPose: () => {
+      if (!camera || !controls) return null
+      return {
+        position: { x: +camera.position.x.toFixed(3), y: +camera.position.y.toFixed(3), z: +camera.position.z.toFixed(3) },
+        lookAt: { x: +controls.target.x.toFixed(3), y: +controls.target.y.toFixed(3), z: +controls.target.z.toFixed(3) },
+        fov: +camera.fov.toFixed(3),
+      }
+    },
+    // 整栋 6 号楼真实模型世界中心（x/z = runtime 锚点；y = 模型竖直中点），供 QA 比对相机目标是否对准模型。
+    modelCenter: () => {
+      const a = anchorOf('6')
+      const box = bld6WholeWorldBox
+      const y = box ? +((box.min.y + box.max.y) / 2).toFixed(3) : null
+      return { x: +a[0].toFixed(3), z: +a[2].toFixed(3), y }
     },
   }
 }
