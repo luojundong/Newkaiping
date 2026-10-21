@@ -1185,12 +1185,12 @@ async function reloadScene() {
 }
 
 // ---------- 相机飞行聚焦 ----------
-function flyTo(target: [number, number, number]) {
+function flyTo(target: [number, number, number], offset: [number, number, number] = [60, 55, 95]) {
   if (!camera || !controls) return
   const fromPos = camera.position.clone()
   const fromTarget = controls.target.clone()
   const toTarget = new THREE.Vector3(target[0], target[1], target[2])
-  const toPos = new THREE.Vector3(target[0] + 60, target[1] + 55, target[2] + 95)
+  const toPos = new THREE.Vector3(target[0] + offset[0], target[1] + offset[1], target[2] + offset[2])
   const start = performance.now()
   const dur = 600
   const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
@@ -1273,6 +1273,53 @@ function translatePresetForAnchor(preset: CameraPreset, buildingId: string): Cam
   }
 }
 
+/** 楼栋/楼层预设的统一生效入口：先按运行时锚点平移，再按楼栋体量收紧取景 */
+function effectiveBuildingPreset(preset: CameraPreset, buildingId: string): CameraPreset {
+  return adaptPresetFramingForBuilding(translatePresetForAnchor(preset, buildingId), buildingId)
+}
+
+/** 楼栋层数：优先 sceneGraph semantic.meta.floors；直链流 sceneSchema 未就绪时回退 store.buildings（scene.init 早加载），未知返回 0 */
+function floorsOf(buildingId: string): number {
+  const n = buildingNodes.value.find((b) => b.buildingId === buildingId || b.buildingCode === buildingId)
+  if (n?.floors) return Number(n.floors)
+  const store = useSceneStore()
+  const b = store.buildings.find((x) => String(x.id) === String(buildingId) || x.code === buildingId)
+  return Number(b?.floors ?? 0)
+}
+
+/**
+ * 低层楼栋取景自适应：schema 预设 pose 按「通用楼栋」设计（offset≈78 单位、lookAt.y=10），
+ * 对高层楼比例合适；但 6 号楼后勤楼这类 2~3 层低层楼（真实 GLB 仅 ~3.3 单位高）在 78 单位
+ * 外只占画面几个百分点，视觉上等于「看不到模型」。仅对低层楼（floors≤3）把水平距离收紧到
+ * ~30 单位、overview 的 lookAt.y 降到模型半高，使模型占画面更大比例。
+ * 高层楼（floors>3）与未知层数楼栋原样返回，行为不变。
+ */
+function adaptPresetFramingForBuilding(preset: CameraPreset, buildingId: string): CameraPreset {
+  const floors = floorsOf(buildingId)
+  if (!floors || floors > 3) return preset
+  const modelH = Math.max(2.5, floors * 1.65) // 6 号楼真实 GLB：2 层 ≈ 3.3 单位高
+  const isOverview = /_overview$/.test(preset.id)
+  const look = preset.pose.lookAt
+  const off = [
+    preset.pose.position[0] - look[0],
+    preset.pose.position[1] - look[1],
+    preset.pose.position[2] - look[2],
+  ]
+  const distH = Math.hypot(off[0], off[2])
+  const TARGET_DIST = 30
+  if (distH <= TARGET_DIST + 1) return preset
+  const k = TARGET_DIST / distH
+  const newLookY = isOverview ? modelH / 2 : look[1]
+  return {
+    ...preset,
+    pose: {
+      ...preset.pose,
+      position: [look[0] + off[0] * k, newLookY + off[1] * k, look[2] + off[2] * k],
+      lookAt: [look[0], newLookY, look[2]],
+    },
+  }
+}
+
 /** 回退默认全院视角（无 schema / 预设缺失时的"默认视角"兜底） */
 function resetDefaultView(): boolean {
   if (!camera) return false
@@ -1299,9 +1346,9 @@ function flyToPreset(presetId: string): boolean {
     )
     return resetDefaultView()
   }
-  // 楼栋/楼层 preset 跟随运行时锚点平移（选 6 号楼看不到模型修复）
+  // 楼栋/楼层 preset 跟随运行时锚点平移 + 低层楼取景自适应（选 6 号楼看不到模型修复）
   const bid = presetBuildingId(preset)
-  const eff = bid ? translatePresetForAnchor(preset, bid) : preset
+  const eff = bid ? effectiveBuildingPreset(preset, bid) : preset
   return applyPresetFlight(eff, presetId)
 }
 
@@ -1309,7 +1356,7 @@ function flyToPreset(presetId: string): boolean {
 function flyToBuilding(buildingId: string): boolean {
   if (!buildingId) return false
   const preset = findBuildingPreset(cameraPresetList.value, buildingId)
-  if (preset) return applyPresetFlight(translatePresetForAnchor(preset, buildingId), preset.id)
+  if (preset) return applyPresetFlight(effectiveBuildingPreset(preset, buildingId), preset.id)
   console.warn(
     `[cameraPreset] 楼栋「${buildingId}」无 overview preset（${presetIdForBuilding(buildingId)}），回退楼栋锚点视角`,
   )
@@ -1318,7 +1365,9 @@ function flyToBuilding(buildingId: string): boolean {
     // 盒体/真实模型/高亮光束均落地渲染（box 用 boxH/2、beam 用固定高度、ring 贴地 y=0.6，
     // 锚点 y 不参与任何放置），故回退视角目标取地面高度，避免 lookAt 高悬于模型上方
     // （锚点 y 可能是任意拖动残留值，如 6 号楼 y=40，会导致模型沉到画面底部之外）。
-    flyTo([a[0], 0, a[2]])
+    // 低层楼（floors≤3）用近机位：默认 offset(60,55,95) 距离 ~124 单位，低层楼在画面里只占几个百分点。
+    const lowRise = floorsOf(buildingId) > 0 && floorsOf(buildingId) <= 3
+    flyTo([a[0], 0, a[2]], lowRise ? [18, 13, 28] : [60, 55, 95])
     return true
   }
   return resetDefaultView()
@@ -1328,7 +1377,7 @@ function flyToBuilding(buildingId: string): boolean {
 function flyToFloor(buildingId: string, floor: number): boolean {
   if (!buildingId || typeof floor !== 'number' || !Number.isFinite(floor)) return false
   const preset = findFloorPreset(cameraPresetList.value, buildingId, floor)
-  if (preset) return applyPresetFlight(translatePresetForAnchor(preset, buildingId), preset.id)
+  if (preset) return applyPresetFlight(effectiveBuildingPreset(preset, buildingId), preset.id)
   console.warn(
     `[cameraPreset] 楼层「${buildingId}/${floor}」无 floor preset（${presetIdForFloor(buildingId, floor)}），相机保持现状`,
   )

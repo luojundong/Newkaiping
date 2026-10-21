@@ -49,7 +49,7 @@ async function getB6Anchor(token) {
     await page.addInitScript((t) => { localStorage.setItem('kp-auth-token', t) }, token)
     return page
   }
-  const assertAligned = (tag, cam, expectY, tolY) => {
+  const assertAligned = (tag, cam, expectY, tolY, maxDist) => {
     if (!cam) { fail += 2; pass += check(tag + ' camPose', false); return }
     const dx = Math.abs(cam.lookAt.x - anchor.x)
     const dz = Math.abs(cam.lookAt.z - anchor.z)
@@ -58,6 +58,12 @@ async function getB6Anchor(token) {
     pass += check(`${tag} lookAt aligned (x/z=anchor, y≈${expectY})`, ok,
       `dx=${dx.toFixed(2)} dz=${dz.toFixed(2)} dy=${dy.toFixed(2)} lookAt=${JSON.stringify(cam.lookAt)}`)
     if (!ok) fail++
+    if (maxDist) {
+      const d = Math.hypot(cam.position.x - cam.lookAt.x, cam.position.y - cam.lookAt.y, cam.position.z - cam.lookAt.z)
+      const dOk = d <= maxDist
+      pass += check(`${tag} framing distance ≤${maxDist} (低层楼近机位)`, dOk, `dist=${d.toFixed(1)} pos=${JSON.stringify(cam.position)}`)
+      if (!dOk) fail++
+    }
   }
 
   // ---- A. 导航点击流（preset 路径）----
@@ -78,7 +84,7 @@ async function getB6Anchor(token) {
   const camA = await page.evaluate(() => { const h = window.__kpB6Jump; return h ? { cam: h.camPose(), center: h.modelCenter(), box: h.wholeBox() } : null })
   console.log('  nav-flow state:', JSON.stringify(camA))
   if (camA && camA.box) pass += check('wholeBox loaded (nav flow)', true); else { fail++; pass += check('wholeBox loaded (nav flow)', false) }
-  assertAligned('A preset-path', camA && camA.cam, 10, 4) // 预设 lookAt.y=10
+  assertAligned('A preset-path', camA && camA.cam, 1.65, 1.2, 45) // 低层楼取景自适应：lookAt.y=模型半高，近机位
   await page.screenshot({ path: `${SHOT}/_qa_b6_navflow.png` }).catch(() => {})
   await page.close()
 
@@ -91,7 +97,7 @@ async function getB6Anchor(token) {
   await page.waitForTimeout(5000)
   const camB = await page.evaluate(() => { const h = window.__kpB6Jump; return h ? h.camPose() : null })
   console.log('  direct-url cam:', JSON.stringify(camB))
-  assertAligned('B fallback-path', camB, 0, 4) // 回退目标取地面 y=0
+  assertAligned('B fallback-path', camB, 0, 4, 50) // 回退目标取地面 y=0；低层楼近机位 dist≤50
   await page.screenshot({ path: `${SHOT}/_qa_b6_directurl.png` }).catch(() => {})
 
   // ---- 楼层预设跟随锚点（在 B 页点 F2 Tab）----
