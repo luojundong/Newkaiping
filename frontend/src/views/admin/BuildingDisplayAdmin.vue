@@ -16,6 +16,15 @@ const form = reactive<BuildingDisplay>({ ...DEFAULT_BUILDING_DISPLAY })
 const saving = ref(false)
 const dirty = ref(false)
 
+// 楼层 3D 模型视图开关（按楼栋；其余楼后台按需开启，有 GLB 时弹窗才会用 3D）
+function setFloorModel3d(id: string, val: boolean) {
+  const map = { ...(form.floor_model_3d_by_building || {}) }
+  if (val) map[id] = true
+  else delete map[id]
+  form.floor_model_3d_by_building = map
+  markDirty()
+}
+
 function markDirty() {
   dirty.value = true
 }
@@ -51,7 +60,15 @@ async function loadConfig() {
 async function loadDisplay() {
   try {
     const bd = await sceneApi.getBuildingDisplay()
-    if (bd) Object.assign(form, bd)
+    if (bd) {
+      // 服务端旧配置可能缺 floor_model_3d_by_building 字段 → 回退前端默认（6 号楼默认开）；
+      // 已显式存了该字段则尊重服务端值（含用户后台开关结果）。保证后台开关 UI 与默认一致。
+      Object.assign(form, {
+        ...bd,
+        floor_model_3d_by_building:
+          bd.floor_model_3d_by_building ?? { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
+      })
+    }
   } catch { /* ignore */ }
 }
 
@@ -617,6 +634,22 @@ watch(selectedBuilding, () => {
 
           <el-form-item label="楼栋名称">
             <el-switch v-model="form.show_labels" @change="markDirty" />
+          </el-form-item>
+
+          <el-divider content-position="left">楼层 3D 模型视图</el-divider>
+          <p class="bd-hint bd-hint--sm">
+            开启后，该楼栋钻取弹窗用「楼层 3D 模型结构」取代 2D 平面示意图（需对应楼层 GLB 已就位）。
+          </p>
+          <el-form-item
+            v-for="b in sceneStore.buildings"
+            :key="b.id"
+            :label="`${b.name}`"
+            class="bd-fm3d-item"
+          >
+            <el-switch
+              :model-value="!!form.floor_model_3d_by_building?.[b.id]"
+              @change="(v: boolean) => setFloorModel3d(b.id, v)"
+            />
           </el-form-item>
         </el-form>
 

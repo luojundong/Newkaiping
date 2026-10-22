@@ -8,6 +8,8 @@ import { SUBSYSTEMS } from '@/types/scene'
 import type { Device } from '@/types/api'
 import { generateFloorPlan, type FloorPlan, type FloorPlanDeviceInput } from '@/lib/floorplan-gen'
 import FloorPlanView from '@/components/bigscreen/FloorPlanView.vue'
+import FloorModelView from '@/components/bigscreen/FloorModelView.vue'
+import { findFloorModel } from '@/lib/floorModels'
 import RemoteControlDialog from '@/components/RemoteControlDialog.vue'
 import LightingControlDialog from '@/components/device/LightingControlDialog.vue'
 
@@ -115,6 +117,8 @@ const plan = computed<FloorPlan | null>(() => {
 
 // 当前选中房间（平面图点击 → 该房间设备列表；null = 全部设备兜底/补充）
 const selectedRoomKey = ref<string | null>(null)
+// 当前选中设备 id（列表点击 / 模型点点击 → 模型上脉冲高亮，双向联动）
+const selectedDeviceId = ref<string | null>(null)
 const selectedRoomName = computed(() => {
   if (!selectedRoomKey.value || !plan.value) return ''
   return plan.value.rooms.find((r) => r.key === selectedRoomKey.value)?.name || ''
@@ -134,6 +138,17 @@ const displayDevices = computed<Device[]>(() =>
 function onRoomSelect(roomKey: string) {
   selectedRoomKey.value = roomKey
 }
+
+// ============ 楼层 3D 模型结构视图（取代 2D 平面示意图） ============
+// 仅当该楼栋后台开启「楼层3D模型」且有对应楼层 GLB 时启用（如 6 号楼 hql-f1/f2/f3.glb）。
+const floorModelUrl = computed<string | null>(() => {
+  if (!props.buildingId || props.floor == null) return null
+  return findFloorModel(props.buildingId, props.floor)?.url ?? null
+})
+const use3dModel = computed<boolean>(() => {
+  const on = !!props.buildingId && scene.buildingDisplay.floor_model_3d_by_building?.[props.buildingId] === true
+  return on && !!floorModelUrl.value
+})
 function onDeviceDot(deviceId: string) {
   const dev = devices.value.find((d) => d.id === deviceId)
   if (dev) openControl(dev)
@@ -155,6 +170,7 @@ const isAc = (d: Device) => d.subsystem_id === 'hvac' || d.category_id === '空�
 const isLight = (d: Device) => d.subsystem_id === 'lighting' || d.category_id === '照明'
 
 function openControl(dev: Device) {
+  selectedDeviceId.value = dev.id // 模型点脉冲高亮（双向联动）
   if (isAc(dev)) {
     rcDevice.value = dev
     rcVisible.value = true
@@ -194,6 +210,7 @@ watch(
   () => [props.buildingId, props.floor],
   () => {
     selectedRoomKey.value = null
+    selectedDeviceId.value = null
     rcVisible.value = false
     lightingVisible.value = false
     if (open.value) load()
@@ -251,9 +268,21 @@ watch(
       <div v-else-if="!devices.length" class="kp-empty">{{ t('该楼层暂未登记设备', 'No devices registered on this floor') }}</div>
 
       <template v-else>
-        <!-- GK-22 上半部分：楼层平面示意图 -->
+        <!-- 上半部分：楼层 3D 模型结构视图（开关开且本层有 GLB）或 2D 平面示意图 -->
         <div class="fd-plan">
+          <FloorModelView
+            v-if="use3dModel"
+            :building-id="props.buildingId || ''"
+            :floor="(props.floor as number)"
+            :model-url="floorModelUrl"
+            :devices="devices"
+            :loading="loading"
+            :highlight-device-ids="roomDeviceIds"
+            :selected-device-id="selectedDeviceId"
+            @device-select="onDeviceDot"
+          />
           <FloorPlanView
+            v-else
             :plan="plan"
             :building-name="buildingName"
             :floor="props.floor"
@@ -263,6 +292,22 @@ watch(
             @room-select="onRoomSelect"
             @device-select="onDeviceDot"
           />
+        </div>
+
+        <!-- 3D 模式下房间过滤 chips（平面示意图里由房间矩形触发，3D 模式改为 chips 保持联动） -->
+        <div v-if="use3dModel && plan && plan.rooms.length" class="fd-rooms">
+          <button
+            v-for="r in plan.rooms"
+            :key="r.key"
+            class="fd-room-chip"
+            :class="{ 'fd-room-chip--on': selectedRoomKey === r.key }"
+            @click="onRoomSelect(r.key)"
+          >
+            {{ r.name }} <i>{{ r.deviceCount }}</i>
+          </button>
+          <button v-if="selectedRoomKey" class="fd-back" @click="backToAll">
+            <ChevronLeft :size="13" /> {{ t('全部', 'All') }}
+          </button>
         </div>
 
         <!-- 下半部分：设备列表（房间选中时过滤为该房间，否则全量兜底） -->
@@ -438,6 +483,33 @@ watch(
   cursor: pointer;
 }
 .fd-back:hover { border-color: var(--kp-accent); }
+
+.fd-rooms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 16px 2px;
+}
+.fd-room-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--kp-text-xs);
+  color: var(--kp-fg-muted);
+  background: var(--kp-glow-soft);
+  border: 1px solid var(--kp-border);
+  border-radius: var(--kp-radius-pill);
+  padding: 2px 10px;
+  cursor: pointer;
+  transition: all var(--kp-motion-fast) var(--kp-ease-standard);
+}
+.fd-room-chip i { font-style: normal; color: var(--kp-fg-subtle); }
+.fd-room-chip:hover { color: var(--kp-fg); border-color: var(--kp-border-strong); }
+.fd-room-chip--on {
+  color: var(--kp-accent);
+  border-color: var(--kp-accent);
+  background: rgba(var(--kp-accent-rgb), 0.1);
+}
 
 .fd__list {
   flex: 1;

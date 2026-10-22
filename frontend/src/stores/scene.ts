@@ -584,12 +584,16 @@ export const useSceneStore = defineStore('scene', () => {
         if (bd) {
           // 合并前端默认楼层标签（仅补齐后端未覆盖的楼栋，如 6 号楼 HQL 真实三层）；
           // 后端若已存储该楼标签则以后端为准（后台 DIY 优先）。
+          // floor_model_3d_by_building：新增字段，旧服务端配置不含 → 用前端默认（6 号楼默认开）；
+          // 若服务端已显式存了该字段（含用户后台开关结果，可能为空对象表示全部关），则尊重服务端值。
           buildingDisplay.value = {
             ...bd,
             floors_by_building: {
               ...DEFAULT_BUILDING_DISPLAY.floors_by_building,
               ...(bd.floors_by_building || {}),
             },
+            floor_model_3d_by_building:
+              bd.floor_model_3d_by_building ?? { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
           }
         }
       } catch { /* 接口异常时保留默认值 */ }
@@ -774,7 +778,13 @@ export const useSceneStore = defineStore('scene', () => {
 
   // ---------- 楼栋显示 DIY（框框区域 + 背景透明度） ----------
   function applyBuildingDisplay(cfg: BuildingDisplay) {
-    buildingDisplay.value = { ...cfg }
+    // 与 init() 保持一致：服务端若未返回 floor_model_3d_by_building（旧数据），
+    // 回退前端默认（6 号楼默认开 3D 模型视图）；服务端已显式存了该字段则尊重之。
+    buildingDisplay.value = {
+      ...cfg,
+      floor_model_3d_by_building:
+        cfg.floor_model_3d_by_building ?? { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
+    }
   }
   async function updateBuildingDisplay(patch: Partial<BuildingDisplay>) {
     try {

@@ -134,6 +134,8 @@ export interface BuildingDisplay {
   per_building?: Record<string, { background_opacity?: number }>
   // 按楼栋的每层自定义标签：key=building_id
   floors_by_building?: Record<string, FloorLabel[]>
+  // 楼层钻取弹窗是否使用 3D 模型结构视图（取代 2D 平面示意图）：key=building_id
+  floor_model_3d_by_building?: Record<string, boolean>
 }
 
 // 楼栋每层自定义标签（Phase 1 楼层标签 + 数据联动）
@@ -165,6 +167,10 @@ export const DEFAULT_BUILDING_DISPLAY: BuildingDisplay = {
       { index: 2, label: '后勤二层', color: '#bfefff' },
       { index: 3, label: '后勤三层', color: '#bfefff' },
     ],
+  },
+  // 楼层钻取弹窗 3D 模型结构视图开关：6 号楼（hql-f1/f2/f3.glb 已就位）默认开；其余楼后台按需开
+  floor_model_3d_by_building: {
+    '6': true,
   },
 }
 
