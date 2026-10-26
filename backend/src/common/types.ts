@@ -172,6 +172,9 @@ export interface BuildingDisplay {
   per_building?: Record<string, { background_opacity?: number }>;
   // 按楼栋的每层自定义标签：key=building_id，value 为该楼从低到高的楼层标签数组
   floors_by_building?: Record<string, FloorLabel[]>;
+  // 楼层钻取弹窗是否使用 3D 模型结构视图（取代 2D 平面示意图）：key=building_id
+  // （仅在该楼已配置对应楼层 GLB 且 FLOOR_MODELS 有映射时，3D 视图才会真正渲染）
+  floor_model_3d_by_building?: Record<string, boolean>;
 }
 
 export interface SceneConfig {

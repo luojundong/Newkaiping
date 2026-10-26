@@ -181,6 +181,7 @@ export class SceneService {
       show_labels: d?.show_labels ?? true,
       per_building: d?.per_building ?? {},
       floors_by_building: d?.floors_by_building ?? {},
+      floor_model_3d_by_building: d?.floor_model_3d_by_building ?? {},
     };
   }
 
@@ -200,6 +201,8 @@ export class SceneService {
       per_building: body.per_building ?? current.per_building ?? {},
       // floors_by_building 为嵌套结构，整体替换（前端全量提交）
       floors_by_building: body.floors_by_building ?? current.floors_by_building ?? {},
+      // floor_model_3d_by_building 为嵌套结构，整体替换（前端全量提交；缺省回退当前/空）
+      floor_model_3d_by_building: body.floor_model_3d_by_building ?? current.floor_model_3d_by_building ?? {},
     };
     await this.connector.update('scene_config', {}, { building_display: merged });
     return merged;

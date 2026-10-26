@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * Bld6FloorTabs.vue — 6 号楼「后勤大楼」3D 楼层切换浮层（参考页 floor-tabs 迁移）。
+ * BuildingFloorTabs.vue — 楼层 3D 切换浮层（泛化版，原 Bld6FloorTabs）
  *
- * 仅当 selectedBuilding==='6' 时显示（挂载于 ScreenHero，仅屏1 透出 3D 时可见）。
- * - 「整楼」→ scene.closeFloorDrill()（露出整栋 hql-building.glb）+ 飞回建筑 overview 预设；
- * - F1 / F2 / F3 → scene.openFloorDrill('6', n)（加载对应 hql-fN.glb + 打开真实数据钻取抽屉 + 相机飞行）。
+ * 仅当 active（屏1 透出 3D）且 选中楼栋在 FLOOR_MODELS 有楼层模型映射时显示。
+ * 列出该楼「有模型的楼层」F1..FN，点击 → scene.openFloorDrill(buildingId, floor)
+ * （加载对应楼层 GLB + 打开真实数据钻取抽屉 + 相机飞行）。
+ * 「整楼」→ closeFloorDrill + 飞回建筑 overview 预设。
  * 与 3D「点击整栋模型按世界 Y 跳楼层」共用同一 openFloorDrill 状态，Tab 高亮即联动。
  *
  * P0：零硬编码色（仅令牌）；图标只用 lucide-vue-next，禁 emoji。
@@ -13,32 +14,38 @@ import { computed } from 'vue'
 import { LayoutGrid } from 'lucide-vue-next'
 import { useSceneStore } from '@/stores/scene'
 import { presetIdForBuilding } from '@/lib/cameraPreset'
+import { FLOOR_MODELS } from '@/lib/floorModels'
 
 const props = defineProps<{ active: boolean }>()
 
 const scene = useSceneStore()
-const visible = computed(() => props.active && scene.selectedBuilding === '6')
-const bldName = computed(() => scene.buildings.find((b) => b.id === '6')?.name || '后勤楼')
+const bid = computed(() => scene.selectedBuilding)
+// 该楼在 FLOOR_MODELS 中有映射的楼层（按楼层号升序）
+const floorModels = computed(() =>
+  FLOOR_MODELS.filter((m) => String(m.buildingId) === String(bid.value)).sort((a, b) => a.floor - b.floor),
+)
+// 仅屏1 透出 3D 且 选中楼栋确有楼层模型时显示（6 号楼全 3 层；4 号楼仅 F1；其余楼无映射则不显示）
+const visible = computed(() => props.active && !!bid.value && floorModels.value.length > 0)
+const bldName = computed(() => scene.buildings.find((b) => b.id === bid.value)?.name || '')
 
 const activeFloor = computed<number | null>(() =>
-  scene.floorDrill.buildingId === '6' && typeof scene.floorDrill.floor === 'number'
+  scene.floorDrill.buildingId === bid.value && typeof scene.floorDrill.floor === 'number'
     ? scene.floorDrill.floor
     : null,
 )
 
-const floors: { label: string; floor: number | null }[] = [
+const floors = computed<{ label: string; floor: number | null }[]>(() => [
   { label: '整楼', floor: null },
-  { label: 'F1', floor: 1 },
-  { label: 'F2', floor: 2 },
-  { label: 'F3', floor: 3 },
-]
+  ...floorModels.value.map((m) => ({ label: 'F' + m.floor, floor: m.floor })),
+])
 
 function pick(floor: number | null): void {
+  if (!bid.value) return
   if (floor === null) {
     scene.closeFloorDrill()
-    scene.requestCameraPreset(presetIdForBuilding('6'))
+    scene.requestCameraPreset(presetIdForBuilding(bid.value))
   } else {
-    scene.openFloorDrill('6', floor)
+    scene.openFloorDrill(bid.value, floor)
   }
 }
 </script>

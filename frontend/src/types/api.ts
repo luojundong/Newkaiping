@@ -168,8 +168,10 @@ export const DEFAULT_BUILDING_DISPLAY: BuildingDisplay = {
       { index: 3, label: '后勤三层', color: '#bfefff' },
     ],
   },
-  // 楼层钻取弹窗 3D 模型结构视图开关：6 号楼（hql-f1/f2/f3.glb 已就位）默认开；其余楼后台按需开
+  // 楼层钻取弹窗 3D 模型结构视图开关：6 号楼（hql-f1/f2/f3.glb 全 3 层）+ 4 号楼（floor-fc-f1.glb 仅 F1）
+  // 已就位，默认开；其余楼后台按需开（需对应楼层 GLB 就位，否则弹窗回退 2D）
   floor_model_3d_by_building: {
+    '4': true,
     '6': true,
   },
 }
