@@ -593,7 +593,9 @@ export const useSceneStore = defineStore('scene', () => {
               ...(bd.floors_by_building || {}),
             },
             floor_model_3d_by_building:
-              bd.floor_model_3d_by_building ?? { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
+              bd.floor_model_3d_by_building && Object.keys(bd.floor_model_3d_by_building).length
+                ? bd.floor_model_3d_by_building
+                : { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
           }
         }
       } catch { /* 接口异常时保留默认值 */ }
@@ -783,7 +785,9 @@ export const useSceneStore = defineStore('scene', () => {
     buildingDisplay.value = {
       ...cfg,
       floor_model_3d_by_building:
-        cfg.floor_model_3d_by_building ?? { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
+        cfg.floor_model_3d_by_building && Object.keys(cfg.floor_model_3d_by_building).length
+          ? cfg.floor_model_3d_by_building
+          : { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
     }
   }
   async function updateBuildingDisplay(patch: Partial<BuildingDisplay>) {

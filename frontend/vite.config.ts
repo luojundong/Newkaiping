@@ -33,6 +33,12 @@ export default defineConfig(({ mode }) => {
           target: apiTarget,
           changeOrigin: true,
         },
+        // 3D 模型（hospital.glb / 楼层 GLB 等）：/models → 后端 public/web/models :5168
+        // 前端用相对路径 /models/*.glb 加载，生产由后端同源托管；dev 下必须由 vite 代理到后端，否则 404。
+        '/models': {
+          target: apiTarget,
+          changeOrigin: true,
+        },
       },
     },
     build: {

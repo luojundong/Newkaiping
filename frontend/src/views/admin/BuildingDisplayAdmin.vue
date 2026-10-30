@@ -61,12 +61,16 @@ async function loadDisplay() {
   try {
     const bd = await sceneApi.getBuildingDisplay()
     if (bd) {
-      // 服务端旧配置可能缺 floor_model_3d_by_building 字段 → 回退前端默认（6 号楼默认开）；
-      // 已显式存了该字段则尊重服务端值（含用户后台开关结果）。保证后台开关 UI 与默认一致。
+      // 服务端旧配置可能缺 floor_model_3d_by_building 字段，或返回空对象 {}（旧数据哨兵）→
+      // 均回退前端默认（6 号楼默认开 3D 模型视图）；已显式存了非空该字段则尊重服务端值
+      // （含用户后台开关结果，形如 {4:true,6:false}）。与 store init/applyBuildingDisplay 一致，
+      // 避免空对象被 ?? 判定为 truthy 而静默关闭默认开启的楼栋。
       Object.assign(form, {
         ...bd,
         floor_model_3d_by_building:
-          bd.floor_model_3d_by_building ?? { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
+          bd.floor_model_3d_by_building && Object.keys(bd.floor_model_3d_by_building).length
+            ? bd.floor_model_3d_by_building
+            : { ...DEFAULT_BUILDING_DISPLAY.floor_model_3d_by_building },
       })
     }
   } catch { /* ignore */ }
